@@ -40,8 +40,10 @@ func init() {
 			  updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			  deleted_at timestamp NULL DEFAULT NULL,
 			  name varchar(255) NOT NULL,
+			  date_of_birth timestamp NOT NULL,
 			  PRIMARY KEY (id),
 			  UNIQUE KEY id (id),
+			  UNIQUE KEY name_dob (name,date_of_birth),
 			  FOREIGN KEY (category_id) REFERENCES category (id) ON DELETE CASCADE
 			);
            `,

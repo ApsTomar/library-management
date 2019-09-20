@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"time"
 )
@@ -10,33 +11,34 @@ const (
 	UserAccount  = "user"
 )
 
-//TODO: createTable for x tables
+//TODO: schema for x tables
 
 type Account struct {
 	gorm.Model
-	Name          string `json:"name"`
-	Email         string `json:"email"`
-	AccountRoleId uint   `json:"accountRoleId"`
-	Password      string `gorm:"-" json:"password"`
-	PasswordHash  string `json:"-"`
+	Name         string `json:"name"`
+	Email        string `json:"email"`
+	AccountRole  string `json:"accountRole"`
+	Password     string `gorm:"-" json:"password"`
+	PasswordHash string `json:"-"`
 }
 
 func (Account) TableName() string {
 	return "account"
 }
 
-type AccountType struct {
-	gorm.Model
-	Role string `json:"role"`
-}
-
-func (AccountType) TableName() string {
-	return "account_type"
-}
+//type AccountType struct {
+//	gorm.Model
+//	Role string `json:"role"`
+//}
+//
+//func (AccountType) TableName() string {
+//	return "account_type"
+//}
 
 type Author struct {
 	gorm.Model
-	Name string `json:"name"`
+	Name        string    `json:"name"`
+	DateOfBirth time.Time `json:"dateOfBirth"`
 }
 
 func (Author) TableName() string {
@@ -82,14 +84,29 @@ func (SubjectXBook) TableName() string {
 	return "subject_x_book"
 }
 
-type UserXBook struct {
+type BookHistory struct {
 	UserID     string    `json:"userId"`
 	BookID     string    `json:"bookId"`
 	IssueDate  time.Time `json:"issueDate"`
 	ReturnDate time.Time `json:"returnDate"`
 }
 
-func (UserXBook) TableName() string {
-	return "user_x_book"
+func (BookHistory) TableName() string {
+	return "book_history"
 }
 
+type Response struct {
+	AccountRole string `json:"accountRole"`
+	Token       string `json:"token"`
+}
+
+type LoginDetails struct {
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	AccountRole string `json:"accountRole"`
+}
+
+type AuthInfo struct {
+	Role string
+	jwt.StandardClaims
+}

@@ -37,7 +37,7 @@ func main() {
 	dataStore = data_store.DbConnect(env)
 
 	r := router()
-	err = http.ListenAndServe(":"+env.Port, r)
+	err = http.ListenAndServe(":"+env.UserSvcPort, r)
 	if err != nil {
 		glog.Fatal(err)
 	}

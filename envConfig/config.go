@@ -1,8 +1,10 @@
 package envConfig
 
 type Env struct {
-	Port          string `envconfig:"PORT" default:"8080"`
-	JwtSigningKey string `envconfig:"JWT_SIGNING_KEY" default:"secret"`
+	UserSvcPort       string `envconfig:"PORT" default:"8080"`
+	BookSvcPort       string `envconfig:"PORT" default:"8081"`
+	ManagementSvcPort string `envconfig:"PORT" default:"8081"`
+	JwtSigningKey     string `envconfig:"JWT_SIGNING_KEY" default:"secret"`
 	DbConfig
 }
 
