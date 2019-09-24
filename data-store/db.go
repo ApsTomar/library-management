@@ -1,6 +1,7 @@
 package data_store
 
 import (
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang/glog"
 	"github.com/jinzhu/gorm"
 	"github.com/library/envConfig"
@@ -15,6 +16,7 @@ type DataStore struct {
 type DbUtil interface {
 	InsertData
 	GetData
+	BookIssue
 	VerifyUser(models.LoginDetails) (*models.Account, error)
 }
 
@@ -28,10 +30,21 @@ type InsertData interface {
 type GetData interface {
 	GetSubjects() (*[]models.Subject, error)
 	GetAuthors() (*[]models.Author, error)
-	GetBooks() (*[]models.Book,error)
-	GetBooksByID(uint) (*models.Book, error)
+	GetBooks() (*[]models.Book, error)
+	GetBooksByName(string) (*[]models.Book, error)
+	GetBookByID(uint) (*models.Book, error)
 	GetBooksByAuthor(uint) (*[]models.Book, error)
 	GetBooksBySubject(uint) (*[]models.Book, error)
+	GetAuthorsByName(string) (*[]models.Author, error)
+	GetAuthorByID(uint) (*models.Author, error)
+}
+
+type BookIssue interface {
+	GetHistory(string) (*[]models.BookHistory, error)
+	GetCompleteHistory() (*[]models.BookHistory, error)
+	CheckAvailability(uint) (bool, error)
+	IssueBook(uint, uint) error
+	ReturnBook(uint) error
 }
 
 func DbConnect(dbConfig *envConfig.Env) DbUtil {

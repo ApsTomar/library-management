@@ -8,13 +8,13 @@ func init() {
 		Up: []string{
 			`
 			CREATE TABLE subject (
-			  id bigint(20) NOT NULL,
+			  id bigint(20) NOT NULL AUTO_INCREMENT,
 			  created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			  updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			  deleted_at timestamp NULL DEFAULT NULL,
 			  name varchar(255) NOT NULL,
 			  PRIMARY KEY (id),
-			  UNIQUE KEY id (id),
+			  UNIQUE KEY id (id)
 			);
 			`,
 			`
@@ -23,7 +23,7 @@ func init() {
 			  subject_id bigint(20) NOT NULL,
 			  PRIMARY KEY (book_id,subject_id),
 			  FOREIGN KEY (subject_id) REFERENCES subject (id) ON DELETE CASCADE,
-			  FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE,
+			  FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE
 			);
 			`,
 			`
@@ -33,8 +33,8 @@ func init() {
 			  issue_date timestamp,
 			  return_date timestamp,
 			  PRIMARY KEY (book_id,user_id),
-			  FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE,
-			  FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE,
+			  FOREIGN KEY (user_id) REFERENCES account (id) ON DELETE CASCADE,
+			  FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE
 			);
 			`,
 		},

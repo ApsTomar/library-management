@@ -3,6 +3,7 @@ module github.com/library
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-chi/chi v4.0.2+incompatible
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gobuffalo/packr v1.30.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/go-cmp v0.3.0 // indirect

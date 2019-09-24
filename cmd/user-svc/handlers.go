@@ -17,6 +17,7 @@ func register() http.HandlerFunc {
 		if err != nil {
 			glog.Errorf("error while decoding registration request body: %v", err)
 			http.Error(w, "error while decoding registration request body", http.StatusInternalServerError)
+			return
 		}
 
 		account.AccountRole = models.UserAccount
@@ -24,6 +25,7 @@ func register() http.HandlerFunc {
 		if err != nil {
 			glog.Errorf("error creating password hash: %v", err)
 			http.Error(w, "error creating password hash", http.StatusInternalServerError)
+			return
 		}
 		account.PasswordHash = hashedPwd
 
@@ -31,6 +33,7 @@ func register() http.HandlerFunc {
 		if err != nil {
 			glog.Errorf("error registering new user: %v", err)
 			http.Error(w, "error registering new user", http.StatusInternalServerError)
+			return
 		}
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -41,6 +44,7 @@ func register() http.HandlerFunc {
 		if err != nil {
 			glog.Errorf("error signing Jwt key: %v", err)
 			http.Error(w, "error signing Jwt key", http.StatusInternalServerError)
+			return
 		}
 		err = json.NewEncoder(w).Encode(&models.Response{AccountRole: models.UserAccount, Token: tokenStr})
 		if err != nil {
@@ -58,6 +62,7 @@ func login(role string) http.HandlerFunc {
 		if err != nil {
 			glog.Errorf("error while decoding login request body: %v", err)
 			http.Error(w, "error while decoding login request body", http.StatusInternalServerError)
+			return
 		}
 		account, err := dataStore.VerifyUser(*details)
 		if err != nil {
@@ -68,12 +73,14 @@ func login(role string) http.HandlerFunc {
 				glog.Errorf("error while logging in: %v", err)
 				http.Error(w, "error while logging in", http.StatusInternalServerError)
 			}
+			return
 		}
 
 		ok := password_hash.ValidatePassword(details.Password, account.PasswordHash)
 		if !ok{
 			glog.Errorf("error while logging in: %v", err)
 			http.Error(w, "error while logging in", http.StatusUnauthorized)
+			return
 		}
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"id":   account.ID,
@@ -83,6 +90,7 @@ func login(role string) http.HandlerFunc {
 		if err != nil {
 			glog.Errorf("error signing Jwt key: %v", err)
 			http.Error(w, "error signing Jwt key", http.StatusInternalServerError)
+			return
 		}
 		err = json.NewEncoder(w).Encode(&models.Response{AccountRole: models.UserAccount, Token: tokenStr})
 		if err != nil {

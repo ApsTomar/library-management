@@ -11,8 +11,6 @@ const (
 	UserAccount  = "user"
 )
 
-//TODO: schema for x tables
-
 type Account struct {
 	gorm.Model
 	Name         string `json:"name"`
@@ -26,19 +24,10 @@ func (Account) TableName() string {
 	return "account"
 }
 
-//type AccountType struct {
-//	gorm.Model
-//	Role string `json:"role"`
-//}
-//
-//func (AccountType) TableName() string {
-//	return "account_type"
-//}
-
 type Author struct {
 	gorm.Model
-	Name        string    `json:"name"`
-	DateOfBirth time.Time `json:"dateOfBirth"`
+	Name        string `json:"name"`
+	DateOfBirth string `json:"dateOfBirth"`
 }
 
 func (Author) TableName() string {
@@ -49,6 +38,7 @@ type Book struct {
 	gorm.Model
 	Name          string    `json:"name"`
 	Subject       string    `json:"subject"`
+	AuthorID      string    `json:"authorId"`
 	Available     bool      `json:"available"`
 	AvailableDate time.Time `json:"availableDate"`
 }
@@ -58,8 +48,8 @@ func (Book) TableName() string {
 }
 
 type BookXAuthor struct {
-	BookID   string `json:"bookId"`
-	AuthorID string `json:"authorId"`
+	BookID   uint `json:"bookId"`
+	AuthorID uint `json:"authorId"`
 }
 
 func (BookXAuthor) TableName() string {
@@ -76,8 +66,8 @@ func (Subject) TableName() string {
 }
 
 type SubjectXBook struct {
-	SubjectID string `json:"subjectId"`
-	BookID    string `json:"bookId"`
+	SubjectID uint `json:"subjectId"`
+	BookID    uint `json:"bookId"`
 }
 
 func (SubjectXBook) TableName() string {
@@ -85,10 +75,11 @@ func (SubjectXBook) TableName() string {
 }
 
 type BookHistory struct {
-	UserID     string    `json:"userId"`
-	BookID     string    `json:"bookId"`
-	IssueDate  time.Time `json:"issueDate"`
-	ReturnDate time.Time `json:"returnDate"`
+	UserID     uint       `json:"userId"`
+	BookID     uint       `json:"bookId"`
+	IssueDate  *time.Time `json:"issueDate"`
+	ReturnDate *time.Time `json:"returnDate"`
+	Returned   bool       `json:"returned"`
 }
 
 func (BookHistory) TableName() string {
