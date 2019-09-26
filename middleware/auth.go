@@ -34,13 +34,13 @@ func CheckAuth() func(handler http.Handler) http.Handler {
 				token = strings.TrimPrefix(token, "bearer ")
 			}
 			if token == "" {
-				glog.Error("Empty token")
-				http.Error(w, "Empty token", http.StatusUnauthorized)
+				glog.Error("empty token")
+				http.Error(w, "empty token", http.StatusUnauthorized)
 				return
 			}
-			if err := validateToken(acc, token, jwtSigningKey); err != nil {
+			if err := ValidateToken(acc, token, jwtSigningKey); err != nil {
 				glog.Errorf("invalid token: %v", err)
-				http.Error(w, "Invalid Token", http.StatusUnauthorized)
+				http.Error(w, "invalid token", http.StatusUnauthorized)
 				return
 			}
 			ctx := context.WithValue(r.Context(), ContextAuthInfo, acc)
@@ -49,7 +49,7 @@ func CheckAuth() func(handler http.Handler) http.Handler {
 	}
 }
 
-func validateToken(claims jwt.Claims, token, jwtSigningKey string) error {
+func ValidateToken(claims jwt.Claims, token, jwtSigningKey string) error {
 	parsedToken, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			msg := fmt.Errorf("unexpected signing Method: %v", token.Header["alg"])
