@@ -2,19 +2,24 @@ package main
 
 import (
 	"flag"
+	"github.com/fluent/fluent-logger-golang/fluent"
 	"github.com/go-chi/chi"
 	"github.com/golang/glog"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/library/data-store"
+	"github.com/library/efk"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
 	"github.com/library/models"
 	"net/http"
 )
 
+const efkTag = "user_svc.logs"
+
 var (
 	dataStore data_store.DbUtil
 	env       *envConfig.Env
+	logger    *fluent.Fluent
 )
 
 func router() *chi.Mux {
@@ -37,6 +42,9 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
+	logger = efk.NewLogger(env)
+	defer logger.Close()
+
 	dataStore = data_store.DbConnect(env)
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 

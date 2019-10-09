@@ -12,10 +12,10 @@ func (ds *DataStore) GetCompleteHistory() (*[]models.BookHistory, error) {
 	return &history, err
 }
 
-func (ds *DataStore) GetHistory(name string) (*[]models.BookHistory, error) {
+func (ds *DataStore) GetHistory(id uint) (*[]models.BookHistory, error) {
 	var history []models.BookHistory
-	query := `select * from book_history where book_id = (select id from book where name = ?)`
-	err := ds.Db.Raw(query, name).Scan(&history).Error
+	query := `select * from book_history where book_id = ?`
+	err := ds.Db.Raw(query, id).Scan(&history).Error
 	return &history, err
 }
 

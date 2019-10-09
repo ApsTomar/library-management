@@ -1,7 +1,6 @@
 package data_store
 
 import (
-	"github.com/golang/glog"
 	"github.com/library/models"
 )
 
@@ -33,7 +32,6 @@ func (ds *DataStore) GetBooksByName(name string) (*[]models.Book, error) {
 	var books []models.Book
 	query := `select * from book where name like '%` + name + `%'`
 	err := ds.Db.Raw(query).Scan(&books).Error
-	glog.Info(name)
 	return &books, err
 }
 

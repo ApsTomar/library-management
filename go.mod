@@ -9,8 +9,10 @@ require (
 	github.com/gobuffalo/packr v1.30.1 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/go-cmp v0.3.0 // indirect
+	github.com/google/uuid v1.1.1
 	github.com/jinzhu/gorm v1.9.10
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/oklog/ulid/v2 v2.0.2
 	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.3
 	github.com/philhofer/fwd v1.0.0 // indirect

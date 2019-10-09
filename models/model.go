@@ -101,3 +101,11 @@ type AuthInfo struct {
 	Role string
 	jwt.StandardClaims
 }
+
+type EfkLogger struct {
+	ID         string    `json:"id"`
+	Timestamp  time.Time `json:"timestamp"`
+	Task       string    `json:"task"`
+	Error      string    `json:"error"`
+	StatusCode int       `json:"statusCode"`
+}

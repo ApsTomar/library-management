@@ -40,7 +40,7 @@ type GetData interface {
 }
 
 type BookIssue interface {
-	GetHistory(string) (*[]models.BookHistory, error)
+	GetHistory(uint) (*[]models.BookHistory, error)
 	GetCompleteHistory() (*[]models.BookHistory, error)
 	CheckAvailability(uint) (bool, error)
 	IssueBook(uint, uint) error
