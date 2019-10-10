@@ -45,7 +45,7 @@ var _ = Describe("Book-Service", func() {
 		db, err = gorm.Open(env.SqlDialect, env.SqlUrl)
 		Expect(err).To(BeNil())
 		middleware.SetJwtSigningKey(env.JwtSigningKey)
-		adminToken, userToken, err = setupBookData(env)
+		adminToken, userToken, err = setupAuthInfo(env)
 		fmt.Println(userToken)
 		Expect(err).To(BeNil())
 		dataStore = data_store.DbConnect(env)
