@@ -15,7 +15,7 @@ func TestBook(t *testing.T) {
 	RunSpecs(t, "Book-Svc Handler Tests")
 }
 
-func setupBookData(env *envConfig.Env) (string, string, error) {
+func setupAuthInfo(env *envConfig.Env) (string, string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":   9999999,
 		"role": models.AdminAccount,

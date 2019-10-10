@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/jinzhu/gorm"
 	"github.com/kelseyhightower/envconfig"
-	data_store "github.com/library/data-store"
+	"github.com/library/data-store"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
 	"github.com/library/models"
@@ -18,7 +18,6 @@ import (
 	"strconv"
 )
 
-//TODO: check for array in the response, dissolve map[string]interface{} && write getallbooks, subjects
 type testData struct {
 	author  string
 	book    string
@@ -27,15 +26,15 @@ type testData struct {
 
 var _ = Describe("Book-Service", func() {
 	var (
-		db         *gorm.DB
-		r          *chi.Mux
-		adminToken string
-		userToken  string
-		data       *testData
-		authorCount int
+		db           *gorm.DB
+		r            *chi.Mux
+		adminToken   string
+		userToken    string
+		data         *testData
+		authorCount  int
 		subjectCount int
-		bookCount int
-		err        error
+		bookCount    int
+		err          error
 	)
 
 	BeforeSuite(func() {
@@ -46,7 +45,6 @@ var _ = Describe("Book-Service", func() {
 		Expect(err).To(BeNil())
 		middleware.SetJwtSigningKey(env.JwtSigningKey)
 		adminToken, userToken, err = setupAuthInfo(env)
-		fmt.Println(userToken)
 		Expect(err).To(BeNil())
 		dataStore = data_store.DbConnect(env)
 		r = router()
@@ -128,6 +126,34 @@ var _ = Describe("Book-Service", func() {
 				var authors []map[string]interface{}
 				err = json.NewDecoder(resp.Body).Decode(&authors)
 				Expect(len(authors)).To(BeEquivalentTo(authorCount))
+			})
+		})
+		Describe("Get All Books", func() {
+			It("Should return all the books", func() {
+				req := httptest.NewRequest(http.MethodGet, "/get/books", nil)
+				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("Authorization", "bearer "+userToken)
+				rec := httptest.NewRecorder()
+				r.ServeHTTP(rec, req)
+				resp := rec.Result()
+				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
+				var books []map[string]interface{}
+				err = json.NewDecoder(resp.Body).Decode(&books)
+				Expect(len(books)).To(BeEquivalentTo(bookCount))
+			})
+		})
+		Describe("Get All Subjects", func() {
+			It("Should return all the subjects", func() {
+				req := httptest.NewRequest(http.MethodGet, "/get/subjects", nil)
+				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("Authorization", "bearer "+userToken)
+				rec := httptest.NewRecorder()
+				r.ServeHTTP(rec, req)
+				resp := rec.Result()
+				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
+				var subjects []map[string]interface{}
+				err = json.NewDecoder(resp.Body).Decode(&subjects)
+				Expect(len(subjects)).To(BeEquivalentTo(subjectCount))
 			})
 		})
 		Describe("Get Books By Name", func() {
