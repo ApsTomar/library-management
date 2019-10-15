@@ -25,9 +25,8 @@ Follow the official documentation for EFK installation or click on this [link](h
 #### management-service:
 `go install ./cmd/management-svc && management-svc -logtostderr`
 
-###To run the services using Docker:
+### To run the services using Docker:
 #### Prerequisites:
 - Docker
 #### command:
 `docker-compose up --build`
-
