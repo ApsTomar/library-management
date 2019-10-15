@@ -12,7 +12,7 @@ This microservice accounts for the books and authors related details management.
 ### management-service:
 This microservice is accountable for book-issue and availability management and services and maintains the record for books issue and returns.
 
-###To run the services individually:
+### To run the services individually:
 #### Prerequisites:
 Follow the official documentation for EFK installation or click on this [link](https://docs.google.com/document/d/1s24lqsu_rhimB7s2CtGMuuweuHkmohbx2CpZ9BeaMz8/edit?usp=sharing).
 - Elasticsearch
