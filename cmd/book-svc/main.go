@@ -48,7 +48,7 @@ func router() *chi.Mux {
 func main() {
 	flag.Parse()
 	env = &envConfig.Env{}
-	err := envconfig.Process("library", env)
+	err := envconfig.Process("LIBRARY", env)
 	if err != nil {
 		glog.Fatal(err)
 	}

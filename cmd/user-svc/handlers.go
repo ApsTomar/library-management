@@ -10,6 +10,7 @@ import (
 	"github.com/library/models"
 	"github.com/library/password-hash"
 	"net/http"
+	"strings"
 )
 
 func register() http.HandlerFunc {
@@ -29,10 +30,14 @@ func register() http.HandlerFunc {
 		account.PasswordHash = hashedPwd
 		err = dataStore.CreateUserAccount(*account)
 		if err != nil {
+			if strings.Contains(err.Error(),"1062"){
+				handleError(w,"registration", err, http.StatusBadRequest)
+				return
+			}
 			handleError(w, "registration", err, http.StatusInternalServerError)
 			return
 		}
-
+		// get the created user account
 		acc, err := dataStore.VerifyUser(*&models.LoginDetails{
 			Email:       account.Email,
 			Password:    account.Password,

@@ -11,7 +11,7 @@ type Env struct {
 
 type DbConfig struct {
 	SqlDialect string `envconfig:"SQL_DIALECT" default:"mysql"`
-	SqlUrl     string `envconfig:"SQL_URL" default:"root:password@tcp(localhost:3306)/library?charset=utf8&parseTime=True&loc=Local"`
+	SqlUrl     string `envconfig:"SQL_URL" default:"root:password@tcp(127.0.0.1:3306)/library?charset=utf8&parseTime=True&loc=Local"`
 }
 
 type FluentConfig struct {

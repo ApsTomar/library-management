@@ -37,15 +37,17 @@ func router() *chi.Mux {
 
 func main() {
 	flag.Parse()
+
 	env = &envConfig.Env{}
-	err := envconfig.Process("library", env)
+	err := envconfig.Process("LIBRARY", env)
 	if err != nil {
 		glog.Fatal(err)
 	}
+	dataStore = data_store.DbConnect(env)
 	logger = efk.NewLogger(env)
 	defer logger.Close()
 
-	dataStore = data_store.DbConnect(env)
+
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 
 	r := router()

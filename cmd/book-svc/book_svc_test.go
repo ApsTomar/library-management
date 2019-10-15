@@ -39,7 +39,7 @@ var _ = Describe("Book-Service", func() {
 
 	BeforeSuite(func() {
 		env = &envConfig.Env{}
-		err = envconfig.Process("library", env)
+		err = envconfig.Process("LIBRARY", env)
 		Expect(err).To(BeNil())
 		db, err = gorm.Open(env.SqlDialect, env.SqlUrl)
 		Expect(err).To(BeNil())

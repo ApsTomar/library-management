@@ -1,0 +1,124 @@
+version: '3.4'
+services:
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: library
+    ports:
+      - "3306:3306"
+    networks:
+      - internal
+
+  elasticsearch:
+    hostname: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
+    restart: always
+    expose:
+      - 9200
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - internal
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:6.4.2
+    restart: always
+    ports:
+      - "5601:5601"
+    links:
+      - elasticsearch
+    networks:
+      - internal
+
+  fluentd:
+    build: ./fluentd
+    restart: always
+    volumes:
+      - ./fluentd/conf:/fluentd/etc
+    links:
+      - elasticsearch
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - internal
+
+  user:
+    build:
+      context: .
+      dockerfile: ./cmd/user-svc/Dockerfile
+    entrypoint: [
+      "bin/user",
+      "-logtostderr",
+    ]
+    restart: always
+    ports:
+      - "8080:8080"
+    links:
+      - mysql
+      - elasticsearch
+      - fluentd
+      - kibana
+    environment:
+      ENVIRONMENT: LIBRARY
+      LIBRARY_SQL_URL: root:password@tcp(mysql:3306)/library?charset=utf8&parseTime=True&loc=Local
+      LIBRARY_FLUENT_PORT: "24224"
+      LIBRARY_FLUENT_HOST: "fluentd"
+    networks:
+      - internal
+
+  book:
+    build:
+      context: .
+      dockerfile: ./cmd/book-svc/Dockerfile
+    entrypoint: [
+      "bin/book",
+      "-logtostderr",
+    ]
+    restart: always
+    ports:
+      - "8081:8081"
+    links:
+      - mysql
+      - elasticsearch
+      - fluentd
+      - kibana
+    environment:
+      ENVIRONMENT: LIBRARY
+      LIBRARY_SQL_URL: root:password@tcp(mysql:3306)/library?charset=utf8&parseTime=True&loc=Local
+      LIBRARY_FLUENT_PORT: "24224"
+      LIBRARY_FLUENT_HOST: "fluentd"
+    networks:
+      - internal
+
+  management:
+    build:
+      context: .
+      dockerfile: ./cmd/management-svc/Dockerfile
+    entrypoint: [
+      "bin/management",
+      "-logtostderr",
+    ]
+    restart: always
+    ports:
+      - "8082:8082"
+    links:
+      - mysql
+      - elasticsearch
+      - fluentd
+      - kibana
+    environment:
+      ENVIRONMENT: LIBRARY
+      LIBRARY_SQL_URL: root:password@tcp(mysql:3306)/library?charset=utf8&parseTime=True&loc=Local
+      LIBRARY_FLUENT_PORT: "24224"
+      LIBRARY_FLUENT_HOST: "fluentd"
+    networks:
+      - internal
+
+networks:
+  internal:
