@@ -1,4 +1,4 @@
-# online-library-system
+# library-management
 This is the codebase for online library management in GoLang. It contains three microservices for users, books and book-issue management. This repo is equipped with EFK logging.
 
 The microservices can be run using the individual commands given below with the service description or they can be run collectively with the Docker.
