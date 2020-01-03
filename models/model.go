@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/dgrijalva/jwt-go"
-	"github.com/jinzhu/gorm"
 	"time"
 )
 
@@ -11,8 +10,15 @@ const (
 	UserAccount  = "user"
 )
 
+type BaseModel struct {
+	ID        uint `gorm:"primary_key" json:"id"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `sql:"index"`
+}
+
 type Account struct {
-	gorm.Model
+	BaseModel
 	Name         string `json:"name"`
 	Email        string `json:"email"`
 	AccountRole  string `json:"accountRole"`
@@ -25,7 +31,7 @@ func (Account) TableName() string {
 }
 
 type Author struct {
-	gorm.Model
+	BaseModel
 	Name        string `json:"name"`
 	DateOfBirth string `json:"dateOfBirth"`
 }
@@ -35,10 +41,11 @@ func (Author) TableName() string {
 }
 
 type Book struct {
-	gorm.Model
+	BaseModel
 	Name          string    `json:"name"`
 	Subject       string    `json:"subject"`
 	AuthorID      string    `json:"authorId"`
+	AuthorName    string    `json:"authorName"`
 	Available     bool      `json:"available"`
 	AvailableDate time.Time `json:"availableDate"`
 }
@@ -57,7 +64,7 @@ func (BookXAuthor) TableName() string {
 }
 
 type Subject struct {
-	gorm.Model
+	BaseModel
 	Name string `json:"name"`
 }
 

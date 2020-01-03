@@ -10,7 +10,6 @@ import (
 	"github.com/library/efk"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
-	"github.com/library/models"
 	"net/http"
 )
 
@@ -24,14 +23,11 @@ var (
 
 func router() *chi.Mux {
 	r := chi.NewRouter()
-	r.Route("/admin", func(router chi.Router) {
-		router.Post("/login", login(models.AdminAccount))
-	})
+	r.Use(middleware.AllowOptions)
 
-	r.Route("/user", func(router chi.Router) {
-		router.Post("/register", register())
-		router.Post("/login", login(models.UserAccount))
-	})
+	r.Post("/register", register())
+	r.Post("/login", login())
+
 	return r
 }
 
@@ -46,7 +42,6 @@ func main() {
 	dataStore = data_store.DbConnect(env)
 	logger = efk.NewLogger(env)
 	defer logger.Close()
-
 
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 

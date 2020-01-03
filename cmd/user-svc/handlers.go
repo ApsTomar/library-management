@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/golang/glog"
 	"github.com/jinzhu/gorm"
@@ -30,8 +31,8 @@ func register() http.HandlerFunc {
 		account.PasswordHash = hashedPwd
 		err = dataStore.CreateUserAccount(*account)
 		if err != nil {
-			if strings.Contains(err.Error(),"1062"){
-				handleError(w,"registration", err, http.StatusBadRequest)
+			if strings.Contains(err.Error(), "1062") {
+				handleError(w, "registration", err, http.StatusBadRequest)
 				return
 			}
 			handleError(w, "registration", err, http.StatusInternalServerError)
@@ -57,6 +58,7 @@ func register() http.HandlerFunc {
 			handleError(w, "registration", err, http.StatusInternalServerError)
 			return
 		}
+		glog.Infof("new user registered with email: %v", account.Email)
 		err = json.NewEncoder(w).Encode(&models.Response{AccountRole: models.UserAccount, Token: tokenStr})
 		if err != nil {
 			handleError(w, "registration", err, http.StatusInternalServerError)
@@ -65,11 +67,10 @@ func register() http.HandlerFunc {
 	}
 }
 
-func login(role string) http.HandlerFunc {
+func login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		details := &models.LoginDetails{}
 		err := json.NewDecoder(r.Body).Decode(details)
-		details.AccountRole = role
 		if err != nil {
 			handleError(w, "login", err, http.StatusInternalServerError)
 			return
@@ -77,7 +78,7 @@ func login(role string) http.HandlerFunc {
 		account, err := dataStore.VerifyUser(*details)
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
-				handleError(w, "login", errors.New("no user found"), http.StatusInternalServerError)
+				handleError(w, "login", errors.New(fmt.Sprintf("no such %v found", details.AccountRole)), http.StatusBadRequest)
 			} else {
 				handleError(w, "login", err, http.StatusInternalServerError)
 			}
@@ -98,7 +99,8 @@ func login(role string) http.HandlerFunc {
 			handleError(w, "login", err, http.StatusInternalServerError)
 			return
 		}
-		err = json.NewEncoder(w).Encode(&models.Response{AccountRole: models.UserAccount, Token: tokenStr})
+		glog.Infof("user login with email: %v", account.Email)
+		err = json.NewEncoder(w).Encode(&models.Response{AccountRole: details.AccountRole, Token: tokenStr})
 		if err != nil {
 			handleError(w, "login", err, http.StatusInternalServerError)
 			return

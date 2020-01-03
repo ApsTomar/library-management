@@ -23,6 +23,7 @@ var (
 
 func router() *chi.Mux {
 	r := chi.NewRouter()
+	r.Use(middleware.AllowOptions)
 	r.Use(middleware.AuthMiddleware()...)
 
 	r.Route("/admin/add", func(r chi.Router) {

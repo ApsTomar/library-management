@@ -31,7 +31,7 @@ func CheckAuth() func(handler http.Handler) http.Handler {
 			t, ok := r.Header["Authorization"]
 			if ok && len(t) >= 1 {
 				token = t[0]
-				token = strings.TrimPrefix(token, "bearer ")
+				token = strings.TrimPrefix(token, "Bearer ")
 			}
 			if token == "" {
 				glog.Error("empty token")

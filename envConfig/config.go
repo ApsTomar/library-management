@@ -1,9 +1,9 @@
 package envConfig
 
 type Env struct {
-	UserSvcPort       string `envconfig:"PORT" default:"8080"`
-	BookSvcPort       string `envconfig:"PORT" default:"8081"`
-	ManagementSvcPort string `envconfig:"PORT" default:"8082"`
+	UserSvcPort       string `envconfig:"PORT" default:"8000"`
+	BookSvcPort       string `envconfig:"PORT" default:"8001"`
+	ManagementSvcPort string `envconfig:"PORT" default:"8002"`
 	JwtSigningKey     string `envconfig:"JWT_SIGNING_KEY" default:"secret"`
 	DbConfig
 	FluentConfig
