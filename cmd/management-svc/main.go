@@ -10,8 +10,8 @@ import (
 	"github.com/library/efk"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
+	"github.com/library/server"
 	"github.com/sirupsen/logrus"
-	"net/http"
 	"os"
 )
 
@@ -21,6 +21,7 @@ var (
 	dataStore data_store.DbUtil
 	env       *envConfig.Env
 	logger    *fluent.Fluent
+	srv       *server.Server
 )
 
 func init() {
@@ -56,12 +57,9 @@ func main() {
 	dataStore = data_store.DbConnect(env)
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 
+	srv = server.NewServer(dataStore)
 	r := router()
-	logrus.WithFields(logrus.Fields{
-		"service": "management-service",
-	}).Info("management-service binding on ", ":"+env.ManagementSvcPort)
-
-	err = http.ListenAndServe(":"+env.ManagementSvcPort, r)
+	err = srv.ListenAndServe(r, env.ManagementSvcPort)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,

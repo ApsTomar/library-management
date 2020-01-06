@@ -10,8 +10,8 @@ import (
 	"github.com/library/efk"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
+	"github.com/library/server"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 const efkTag = "book_svc.logs"
@@ -20,6 +20,7 @@ var (
 	dataStore data_store.DbUtil
 	env       *envConfig.Env
 	logger    *fluent.Fluent
+	srv       *server.Server
 )
 
 func router() *chi.Mux {
@@ -60,12 +61,9 @@ func main() {
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 	dataStore = data_store.DbConnect(env)
 
+	srv = server.NewServer(dataStore)
 	r := router()
-	logrus.WithFields(logrus.Fields{
-		"service": "book-service",
-	}).Info("book-service binding on ", ":"+env.BookSvcPort)
-
-	err = http.ListenAndServe(":"+env.BookSvcPort, r)
+	err = srv.ListenAndServe(r, env.BookSvcPort)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
