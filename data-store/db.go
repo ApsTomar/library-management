@@ -2,11 +2,11 @@ package data_store
 
 import (
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/golang/glog"
 	"github.com/jinzhu/gorm"
 	"github.com/library/envConfig"
 	"github.com/library/migrations"
 	"github.com/library/models"
+	"github.com/sirupsen/logrus"
 )
 
 type DataStore struct {
@@ -50,11 +50,15 @@ type BookIssue interface {
 func DbConnect(dbConfig *envConfig.Env) DbUtil {
 	db, err := gorm.Open(dbConfig.SqlDialect, dbConfig.SqlUrl)
 	if err != nil {
-		glog.Fatalf("DB connection not established due to: %v", err)
+		logrus.WithFields(logrus.Fields{
+			"error":      err,
+		}).Fatal("DB connection not established")
 	}
 	err = migrations.InitMySQL(db)
 	if err != nil {
-		glog.Fatalf("error running migrations: %v", err)
+		logrus.WithFields(logrus.Fields{
+			"error":      err,
+		}).Fatal("error running migrations")
 	}
 	return &DataStore{Db: db}
 }

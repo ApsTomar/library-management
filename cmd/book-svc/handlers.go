@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-chi/chi"
-	"github.com/golang/glog"
 	"github.com/jinzhu/gorm"
 	"github.com/library/efk"
 	"github.com/library/middleware"
 	"github.com/library/models"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"strings"
@@ -261,5 +261,7 @@ func getAuthorByID(w http.ResponseWriter, r *http.Request) {
 func handleError(w http.ResponseWriter, task string, err error, statusCode int) {
 	efk.LogError(logger, efkTag, task, err, statusCode)
 	http.Error(w, err.Error(), statusCode)
-	glog.Error(err)
-}
+	logrus.WithFields(logrus.Fields{
+		"statusCode": statusCode,
+		"error":      err,
+	}).Error(task)}

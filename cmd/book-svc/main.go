@@ -10,6 +10,7 @@ import (
 	"github.com/library/efk"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -60,9 +61,14 @@ func main() {
 	dataStore = data_store.DbConnect(env)
 
 	r := router()
-	glog.Infof("Book-service binding on %s", ":"+env.BookSvcPort)
+	logrus.WithFields(logrus.Fields{
+		"service": "book-service",
+	}).Info("book-service binding on ", ":"+env.BookSvcPort)
+
 	err = http.ListenAndServe(":"+env.BookSvcPort, r)
 	if err != nil {
-		glog.Fatal(err)
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("server start")
 	}
 }

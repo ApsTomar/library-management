@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/chi"
-	"github.com/golang/glog"
 	"github.com/library/models"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 )
@@ -34,12 +34,17 @@ func CheckAuth() func(handler http.Handler) http.Handler {
 				token = strings.TrimPrefix(token, "Bearer ")
 			}
 			if token == "" {
-				glog.Error("empty token")
+				logrus.WithFields(logrus.Fields{
+					"statusCode": http.StatusUnauthorized,
+				}).Error("empty token")
 				http.Error(w, "empty token", http.StatusUnauthorized)
 				return
 			}
 			if err := ValidateToken(acc, token, jwtSigningKey); err != nil {
-				glog.Errorf("invalid token: %v", err)
+				logrus.WithFields(logrus.Fields{
+					"statusCode": http.StatusUnauthorized,
+					"error":      err,
+				}).Error("invalid token")
 				http.Error(w, "invalid token", http.StatusUnauthorized)
 				return
 			}

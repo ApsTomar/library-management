@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/golang/glog"
 	"github.com/jinzhu/gorm"
 	"github.com/library/efk"
 	"github.com/library/models"
 	"github.com/library/password-hash"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 )
@@ -58,7 +58,10 @@ func register() http.HandlerFunc {
 			handleError(w, "registration", err, http.StatusInternalServerError)
 			return
 		}
-		glog.Infof("new user registered with email: %v", account.Email)
+		logrus.WithFields(logrus.Fields{
+			"statusCode": http.StatusOK,
+		}).Info(fmt.Sprintf("new user registered with email: %v", account.Email))
+
 		err = json.NewEncoder(w).Encode(&models.Response{AccountRole: models.UserAccount, Token: tokenStr})
 		if err != nil {
 			handleError(w, "registration", err, http.StatusInternalServerError)
@@ -99,7 +102,9 @@ func login() http.HandlerFunc {
 			handleError(w, "login", err, http.StatusInternalServerError)
 			return
 		}
-		glog.Infof("user login with email: %v", account.Email)
+		logrus.WithFields(logrus.Fields{
+			"statusCode": http.StatusOK,
+		}).Info(fmt.Sprintf("user login with email: %v", account.Email))
 		err = json.NewEncoder(w).Encode(&models.Response{AccountRole: details.AccountRole, Token: tokenStr})
 		if err != nil {
 			handleError(w, "login", err, http.StatusInternalServerError)
@@ -111,5 +116,8 @@ func login() http.HandlerFunc {
 func handleError(w http.ResponseWriter, task string, err error, statusCode int) {
 	efk.LogError(logger, efkTag, task, err, statusCode)
 	http.Error(w, err.Error(), statusCode)
-	glog.Error(err)
+	logrus.WithFields(logrus.Fields{
+		"statusCode": statusCode,
+		"error":      err,
+	}).Error(task)
 }

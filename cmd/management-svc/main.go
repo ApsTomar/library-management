@@ -10,7 +10,9 @@ import (
 	"github.com/library/efk"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
+	"github.com/sirupsen/logrus"
 	"net/http"
+	"os"
 )
 
 const efkTag = "management_svc.logs"
@@ -20,6 +22,11 @@ var (
 	env       *envConfig.Env
 	logger    *fluent.Fluent
 )
+
+func init() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetOutput(os.Stdout)
+}
 
 func router() *chi.Mux {
 	r := chi.NewRouter()
@@ -50,9 +57,14 @@ func main() {
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 
 	r := router()
-	glog.Infof("Management-service binding on %s", ":"+env.ManagementSvcPort)
+	logrus.WithFields(logrus.Fields{
+		"service": "management-service",
+	}).Info("management-service binding on ", ":"+env.ManagementSvcPort)
+
 	err = http.ListenAndServe(":"+env.ManagementSvcPort, r)
 	if err != nil {
-		glog.Fatal(err)
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("server start")
 	}
 }
