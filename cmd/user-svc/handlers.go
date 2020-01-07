@@ -75,7 +75,7 @@ func register() http.HandlerFunc {
 
 func login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.Background()
+		ctx := r.Context()
 		details := &models.LoginDetails{}
 		err := json.NewDecoder(r.Body).Decode(details)
 		if err != nil {
