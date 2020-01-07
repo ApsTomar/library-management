@@ -20,12 +20,14 @@ var (
 	dataStore data_store.DbUtil
 	env       *envConfig.Env
 	logger    *fluent.Fluent
+	tracingID string
 )
 
 func router() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.AllowOptions)
-	r.Use(middleware.AuthMiddleware()...)
+	r.Use(middleware.RequestTracing)
+	r.Use(middleware.ChainMiddlewares(true)...)
 
 	r.Route("/admin/add", func(r chi.Router) {
 		r.Post("/author", addAuthor)
