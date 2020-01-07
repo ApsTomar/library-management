@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/go-chi/chi"
 	"github.com/library/models"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -17,10 +16,6 @@ const ContextAuthInfo = "auth-info"
 
 func SetJwtSigningKey(key string) {
 	jwtSigningKey = key
-}
-
-func AuthMiddleware() chi.Middlewares {
-	return chi.Chain(CheckAuth())
 }
 
 func CheckAuth() func(handler http.Handler) http.Handler {

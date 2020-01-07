@@ -21,6 +21,7 @@ var (
 	env       *envConfig.Env
 	logger    *fluent.Fluent
 	srv       *server.Server
+	tracingID string
 )
 
 func init() {
@@ -30,7 +31,7 @@ func init() {
 
 func router() *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(middleware.AllowOptions)
+	r.Use(middleware.ChainMiddlewares(false)...)
 
 	r.Post("/register", register())
 	r.Post("/login", login())

@@ -22,6 +22,7 @@ var (
 	env       *envConfig.Env
 	logger    *fluent.Fluent
 	srv       *server.Server
+	tracingID string
 )
 
 func init() {
@@ -31,7 +32,8 @@ func init() {
 
 func router() *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(middleware.AuthMiddleware()...)
+	r.Use(middleware.ChainMiddlewares(true)...)
+
 	r.Route("/admin", func(r chi.Router) {
 		r.Get("/issue-book", issueBook)
 		r.Get("/get-history/{id}", getHistory)
