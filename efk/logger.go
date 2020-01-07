@@ -3,7 +3,6 @@ package efk
 import (
 	"encoding/json"
 	"github.com/fluent/fluent-logger-golang/fluent"
-	"github.com/google/uuid"
 	"github.com/library/envConfig"
 	"github.com/library/models"
 	"github.com/sirupsen/logrus"
@@ -30,9 +29,9 @@ func NewLogger(env *envConfig.Env) *fluent.Fluent {
 	return logger
 }
 
-func LogError(logger *fluent.Fluent, tag, task string, err error, statusCode int) {
+func LogError(logger *fluent.Fluent, tag, tracingID string, task string, err error, statusCode int) {
 	loggerErr := models.EfkLogger{
-		ID:         uuid.New().String(),
+		ID:         tracingID,
 		Timestamp:  time.Now(),
 		Task:       task,
 		Error:      err.Error(),
