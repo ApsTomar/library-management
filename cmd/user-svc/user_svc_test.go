@@ -26,11 +26,12 @@ var _ = Describe("User-Service", func() {
 		env = &envConfig.Env{}
 		err = envconfig.Process("library", env)
 		Expect(err).To(BeNil())
-		db, err = gorm.Open(env.SqlDialect, env.SqlUrl)
+		testRun = true
+		db, err = gorm.Open(env.SqlDialect, env.TestSqlUrl)
 		Expect(err).To(BeNil())
 		err = setupUserData(db)
 		Expect(err).To(BeNil())
-		dataStore = data_store.DbConnect(env)
+		dataStore = data_store.DbConnect(env, true)
 		middleware.SetJwtSigningKey(env.JwtSigningKey)
 	})
 	Describe("Handlers Test", func() {
@@ -43,13 +44,13 @@ var _ = Describe("User-Service", func() {
 				}
 				marshalReq, err := json.Marshal(regReq)
 				Expect(err).To(BeNil())
-				req := httptest.NewRequest(http.MethodPost, "/user/register", bytes.NewBuffer(marshalReq))
+				req := httptest.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(marshalReq))
 				req.Header.Set("Content-Type", "application/json")
 				rec := httptest.NewRecorder()
 				register().ServeHTTP(rec, req)
 				resp := rec.Result()
 				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
-				resp.Close = true
+				resp.Body.Close()
 			})
 		})
 
@@ -58,57 +59,63 @@ var _ = Describe("User-Service", func() {
 				It("Should provide valid JWT token", func() {
 					adminEmail = "test@admin.com"
 					loginReq := &models.LoginDetails{
-						Email:    adminEmail,
-						Password: "password",
+						Email:       adminEmail,
+						Password:    "password",
+						AccountRole: "admin",
 					}
 					marshalReq, err := json.Marshal(loginReq)
 					Expect(err).To(BeNil())
-					req := httptest.NewRequest(http.MethodPost, "/admin/login", bytes.NewBuffer(marshalReq))
+					req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(marshalReq))
 					req.Header.Set("Content-Type", "application/json")
 					rec := httptest.NewRecorder()
-					login(models.AdminAccount).ServeHTTP(rec, req)
+					login().ServeHTTP(rec, req)
 					resp := rec.Result()
 					Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
+					defer resp.Body.Close()
 				})
 			})
 			Context("User Login", func() {
 				It("Should provide valid JWT token", func() {
 					userEmail = "test@user.com"
 					loginReq := &models.LoginDetails{
-						Email:    userEmail,
-						Password: "password",
+						Email:       userEmail,
+						Password:    "password",
+						AccountRole: "user",
 					}
 					marshalReq, err := json.Marshal(loginReq)
 					Expect(err).To(BeNil())
-					req := httptest.NewRequest(http.MethodPost, "/user/login", bytes.NewBuffer(marshalReq))
+					req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(marshalReq))
 					req.Header.Set("Content-Type", "application/json")
 					rec := httptest.NewRecorder()
-					login(models.UserAccount).ServeHTTP(rec, req)
+					login().ServeHTTP(rec, req)
 					resp := rec.Result()
 					Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
+					defer resp.Body.Close()
 				})
 			})
 			Context("Login with Invalid Credentials", func() {
 				It("Should return Status Unauthorized", func() {
 					loginReq := &models.LoginDetails{
-						Email:    "invalid@user.com",
-						Password: "invalidPassword",
+						Email:       userEmail,
+						Password:    "invalidPassword",
+						AccountRole: "user",
 					}
 					marshalReq, err := json.Marshal(loginReq)
 					Expect(err).To(BeNil())
-					req := httptest.NewRequest(http.MethodPost, "/user/login", bytes.NewBuffer(marshalReq))
+					req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(marshalReq))
 					req.Header.Set("Content-Type", "application/json")
 					rec := httptest.NewRecorder()
-					login(models.UserAccount).ServeHTTP(rec, req)
+					login().ServeHTTP(rec, req)
 					resp := rec.Result()
 					Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusUnauthorized))
+					defer resp.Body.Close()
 				})
 			})
 		})
 	})
 	AfterSuite(func() {
-		err = cleanTestData(db, adminEmail, userEmail)
-		Expect(err).To(BeNil())
+		//err = cleanTestData(db, adminEmail, userEmail)
+		//Expect(err).To(BeNil())
 		err = db.Close()
 		Expect(err).To(BeNil())
 	})
