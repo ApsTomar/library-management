@@ -12,6 +12,7 @@ import (
 	"github.com/library/middleware"
 	"github.com/library/server"
 	"github.com/sirupsen/logrus"
+	"os"
 )
 
 const efkTag = "book_svc.logs"
@@ -22,7 +23,14 @@ var (
 	logger    *fluent.Fluent
 	srv       *server.Server
 	tracingID string
+	testRun bool
 )
+
+func init() {
+	testRun = false
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetOutput(os.Stdout)
+}
 
 func setupRouter() *chi.Mux {
 	r := chi.NewRouter()
@@ -61,7 +69,7 @@ func main() {
 	defer logger.Close()
 
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
-	dataStore = data_store.DbConnect(env, false)
+	dataStore = data_store.DbConnect(env, testRun)
 
 	srv = server.NewServer(dataStore)
 	r := setupRouter()

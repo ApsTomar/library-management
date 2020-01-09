@@ -41,18 +41,18 @@ var _ = Describe("Book-Service", func() {
 		env = &envConfig.Env{}
 		err = envconfig.Process("LIBRARY", env)
 		Expect(err).To(BeNil())
-		db, err = gorm.Open(env.SqlDialect, env.SqlUrl)
+		db, err = gorm.Open(env.SqlDialect, env.TestSqlUrl)
 		Expect(err).To(BeNil())
 		middleware.SetJwtSigningKey(env.JwtSigningKey)
 		adminToken, userToken, err = setupAuthInfo(env)
 		Expect(err).To(BeNil())
-		dataStore = data_store.DbConnect(env)
-		r = router()
+		dataStore = data_store.DbConnect(env, true)
+		r = setupRouter()
 		data = &testData{}
 	})
 	Describe("Handlers Test", func() {
 		Describe("Add Author", func() {
-			It("Should create a new book in DB", func() {
+			It("Should create a new author in DB", func() {
 				authorReq := &models.Author{
 					Name:        "testAuthor",
 					DateOfBirth: "29 February 1600",
@@ -61,7 +61,7 @@ var _ = Describe("Book-Service", func() {
 				Expect(err).To(BeNil())
 				req := httptest.NewRequest(http.MethodPost, "/admin/add/author", bytes.NewBuffer(marshalReq))
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+adminToken)
+				req.Header.Set("Authorization", "Bearer "+adminToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
@@ -80,7 +80,7 @@ var _ = Describe("Book-Service", func() {
 				Expect(err).To(BeNil())
 				req := httptest.NewRequest(http.MethodPost, "/admin/add/subject", bytes.NewBuffer(marshalReq))
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+adminToken)
+				req.Header.Set("Authorization", "Bearer "+adminToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
@@ -104,7 +104,7 @@ var _ = Describe("Book-Service", func() {
 				Expect(err).To(BeNil())
 				req := httptest.NewRequest(http.MethodPost, "/admin/add/book", bytes.NewBuffer(marshalReq))
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+adminToken)
+				req.Header.Set("Authorization", "Bearer "+adminToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
@@ -118,7 +118,7 @@ var _ = Describe("Book-Service", func() {
 			It("Should return all the authors", func() {
 				req := httptest.NewRequest(http.MethodGet, "/get/authors", nil)
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+userToken)
+				req.Header.Set("Authorization", "Bearer "+userToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
@@ -132,7 +132,7 @@ var _ = Describe("Book-Service", func() {
 			It("Should return all the books", func() {
 				req := httptest.NewRequest(http.MethodGet, "/get/books", nil)
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+userToken)
+				req.Header.Set("Authorization", "Bearer "+userToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
@@ -146,7 +146,7 @@ var _ = Describe("Book-Service", func() {
 			It("Should return all the subjects", func() {
 				req := httptest.NewRequest(http.MethodGet, "/get/subjects", nil)
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+userToken)
+				req.Header.Set("Authorization", "Bearer "+userToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
@@ -160,7 +160,7 @@ var _ = Describe("Book-Service", func() {
 			It("Should return the books matching the name", func() {
 				req := httptest.NewRequest(http.MethodGet, "/get/books-by-name/testBook", nil)
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+userToken)
+				req.Header.Set("Authorization", "Bearer "+userToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
@@ -177,7 +177,7 @@ var _ = Describe("Book-Service", func() {
 				Expect(err).To(BeNil())
 				req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/get/book-by-id/%v", book.ID), nil)
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+userToken)
+				req.Header.Set("Authorization", "Bearer "+userToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
@@ -195,7 +195,7 @@ var _ = Describe("Book-Service", func() {
 				Expect(err).To(BeNil())
 				req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/get/books-by-author/%v", author.ID), nil)
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+userToken)
+				req.Header.Set("Authorization", "Bearer "+userToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
@@ -213,7 +213,7 @@ var _ = Describe("Book-Service", func() {
 				Expect(err).To(BeNil())
 				req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/get/books-by-subject/%v", subject.ID), nil)
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+userToken)
+				req.Header.Set("Authorization", "Bearer "+userToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
@@ -228,7 +228,7 @@ var _ = Describe("Book-Service", func() {
 			It("Should return author matching the name", func() {
 				req := httptest.NewRequest(http.MethodGet, "/get/author-by-name/testAuthor", nil)
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+userToken)
+				req.Header.Set("Authorization", "Bearer "+userToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
@@ -246,7 +246,7 @@ var _ = Describe("Book-Service", func() {
 				Expect(err).To(BeNil())
 				req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/get/author-by-id/%v", author.ID), nil)
 				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Authorization", "bearer "+userToken)
+				req.Header.Set("Authorization", "Bearer "+userToken)
 				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()

@@ -27,6 +27,7 @@ func TestSignupAndLogin(t *testing.T) {
 			So(err, ShouldBeNil)
 			req.Header.Set("Content-Type", "application/json")
 			resp, err := http.DefaultClient.Do(req)
+			So(err,ShouldBeNil)
 			So(resp.StatusCode, ShouldEqual, http.StatusOK)
 			defer resp.Body.Close()
 		})

@@ -32,8 +32,8 @@ var _ = Describe("Management-Service", func() {
 		setupMockData()
 		adminToken, userToken, err = setupAuthInfo(env)
 		Expect(err).To(BeNil())
-		dataStore = data_store.DbConnect(env)
-		r = router()
+		dataStore = data_store.DbConnect(env, true)
+		r = setupRouter()
 	})
 	Describe("Check availability", func() {
 		It("Should return the availability of specified book", func() {

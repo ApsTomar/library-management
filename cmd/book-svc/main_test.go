@@ -5,8 +5,6 @@ import (
 	data_store "github.com/library/data-store"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
-	"github.com/library/models"
-	password_hash "github.com/library/password-hash"
 	"github.com/library/server"
 	"github.com/sirupsen/logrus"
 	"net/http/httptest"
@@ -15,9 +13,10 @@ import (
 )
 
 var (
-	adminEmail string
-	userEmail  string
+	adminToken string
+	userToken  string
 	testServer *httptest.Server
+	testAuthorID string
 )
 
 func init() {
@@ -34,37 +33,16 @@ func TestMain(m *testing.M) {
 		}).Fatal("processing env")
 	}
 	dataStore = data_store.DbConnect(env, true)
-	err = createAdminAccount()
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"error": err,
-		}).Fatal("creating admin account")
-	}
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
+	adminToken, userToken, err = setupAuthInfo(env)
 
 	srv = server.NewServer(dataStore)
 	r := setupRouter()
 	testServer = httptest.NewServer(r)
 	_ = m.Run()
-	if err := dataStore.ClearUserSvcData(adminEmail, userEmail); err != nil {
+	if err := dataStore.ClearBookSvcData("testAuthor", "testSubject", "testBook"); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
 		}).Fatal("cleaning testDB")
 	}
-}
-
-func createAdminAccount() error {
-	password := "password"
-	hashedPwd, err := password_hash.HashPassword(password)
-	if err != nil {
-		return err
-	}
-	admin := &models.Account{
-		Name:         "IntegrationAdmin",
-		Email:        "integration@admin.com",
-		AccountRole:  models.AdminAccount,
-		Password:     password,
-		PasswordHash: hashedPwd,
-	}
-	return dataStore.CreateUserAccount(*admin)
 }

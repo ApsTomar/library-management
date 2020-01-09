@@ -18,7 +18,8 @@ type DbUtil interface {
 	GetData
 	BookIssue
 	VerifyUser(models.LoginDetails) (*models.Account, error)
-	ClearDb(string, string) error
+	ClearUserSvcData(string, string) error
+	ClearBookSvcData(string, string, string) error
 }
 
 type InsertData interface {
@@ -70,11 +71,24 @@ func DbConnect(dbConfig *envConfig.Env, testing bool) DbUtil {
 	return &DataStore{Db: db}
 }
 
-func (ds *DataStore) ClearDb(adminEmail, userEmail string) error {
+func (ds *DataStore) ClearUserSvcData(adminEmail, userEmail string) error {
 	if err := ds.Db.Exec(`delete from account where email = ?`, adminEmail).Error; err != nil {
 		return err
 	}
 	if err := ds.Db.Exec(`delete from account where email = ?`, userEmail).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ds *DataStore) ClearBookSvcData(authorName, SubjectName, BookName string) error {
+	if err := ds.Db.Exec(`delete from author where name = ?`, authorName).Error; err != nil {
+		return err
+	}
+	if err := ds.Db.Exec(`delete from subject where name = ?`, SubjectName).Error; err != nil {
+		return err
+	}
+	if err := ds.Db.Exec(`delete from book where name = ?`, BookName).Error; err != nil {
 		return err
 	}
 	return nil
