@@ -18,6 +18,7 @@ type DbUtil interface {
 	GetData
 	BookIssue
 	VerifyUser(models.LoginDetails) (*models.Account, error)
+	ClearDb(string, string) error
 }
 
 type InsertData interface {
@@ -47,18 +48,34 @@ type BookIssue interface {
 	ReturnBook(uint) error
 }
 
-func DbConnect(dbConfig *envConfig.Env) DbUtil {
-	db, err := gorm.Open(dbConfig.SqlDialect, dbConfig.SqlUrl)
+func DbConnect(dbConfig *envConfig.Env, testing bool) DbUtil {
+	var sqlUrl string
+	if testing {
+		sqlUrl = dbConfig.TestSqlUrl
+	} else {
+		sqlUrl = dbConfig.SqlUrl
+	}
+	db, err := gorm.Open(dbConfig.SqlDialect, sqlUrl)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error":      err,
+			"error": err,
 		}).Fatal("DB connection not established")
 	}
 	err = migrations.InitMySQL(db)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error":      err,
+			"error": err,
 		}).Fatal("error running migrations")
 	}
 	return &DataStore{Db: db}
+}
+
+func (ds *DataStore) ClearDb(adminEmail, userEmail string) error {
+	if err := ds.Db.Exec(`delete from account where email = ?`, adminEmail).Error; err != nil {
+		return err
+	}
+	if err := ds.Db.Exec(`delete from account where email = ?`, userEmail).Error; err != nil {
+		return err
+	}
+	return nil
 }

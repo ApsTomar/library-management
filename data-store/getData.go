@@ -83,3 +83,4 @@ func (ds *DataStore) GetAuthorByID(id uint) (*models.Author, error) {
 	err := ds.Db.Where("id = ?", id).Find(author).Error
 	return author, err
 }
+

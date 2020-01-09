@@ -61,7 +61,7 @@ func addBook(w http.ResponseWriter, r *http.Request) {
 	err = dataStore.CreateBook(*book)
 	if err != nil {
 		if strings.Contains(err.Error(), "1062") {
-			handleError(w, "add_book", err, http.StatusBadRequest)
+			handleError(w, ctx, "add_book", err, http.StatusBadRequest)
 			return
 		}
 		handleError(w, ctx, "add_book", err, http.StatusInternalServerError)

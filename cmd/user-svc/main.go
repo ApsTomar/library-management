@@ -22,14 +22,16 @@ var (
 	logger    *fluent.Fluent
 	srv       *server.Server
 	tracingID string
+	testRun bool
 )
 
 func init() {
+	testRun = false
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(os.Stdout)
 }
 
-func router() *chi.Mux {
+func setupRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.ChainMiddlewares(false)...)
 
@@ -48,15 +50,15 @@ func main() {
 			"error": err,
 		}).Error("processing env")
 	}
-	dataStore = data_store.DbConnect(env)
+	dataStore = data_store.DbConnect(env, testRun)
 	logger = efk.NewLogger(env)
 	defer logger.Close()
 
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 
 	srv = server.NewServer(dataStore)
-	r := router()
-	err = srv.ListenAndServe(r, env.UserSvcPort)
+	r := setupRouter()
+	err = srv.ListenAndServe(r, "user-service", env.UserSvcPort)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,

@@ -30,7 +30,7 @@ func init() {
 	logrus.SetOutput(os.Stdout)
 }
 
-func router() *chi.Mux {
+func setupRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.ChainMiddlewares(true)...)
 
@@ -56,12 +56,12 @@ func main() {
 	logger = efk.NewLogger(env)
 	defer logger.Close()
 
-	dataStore = data_store.DbConnect(env)
+	dataStore = data_store.DbConnect(env, false)
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 
 	srv = server.NewServer(dataStore)
-	r := router()
-	err = srv.ListenAndServe(r, env.ManagementSvcPort)
+	r := setupRouter()
+	err = srv.ListenAndServe(r, "management-service", env.ManagementSvcPort)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,

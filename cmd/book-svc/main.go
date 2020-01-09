@@ -24,7 +24,7 @@ var (
 	tracingID string
 )
 
-func router() *chi.Mux {
+func setupRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.AllowOptions)
 	r.Use(middleware.RequestTracing)
@@ -61,11 +61,11 @@ func main() {
 	defer logger.Close()
 
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
-	dataStore = data_store.DbConnect(env)
+	dataStore = data_store.DbConnect(env, false)
 
 	srv = server.NewServer(dataStore)
-	r := router()
-	err = srv.ListenAndServe(r, env.BookSvcPort)
+	r := setupRouter()
+	err = srv.ListenAndServe(r, "book-service", env.BookSvcPort)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
