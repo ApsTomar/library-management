@@ -36,10 +36,10 @@ func main() {
 			"error": err,
 		}).Error("processing env")
 	}
-	dataStore = data_store.DbConnect(env, testRun)
 	logger = efk.NewLogger(env)
 	defer logger.Close()
 
+	dataStore = data_store.DbConnect(env, testRun)
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 
 	srv = user_server.NewServer(env, dataStore, logger)

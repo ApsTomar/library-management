@@ -1,4 +1,4 @@
-package management_server
+package book_server
 
 import (
 	"github.com/fluent/fluent-logger-golang/fluent"
@@ -23,7 +23,7 @@ func NewServer(env *envConfig.Env, db datastore.DbUtil, logger *fluent.Fluent) *
 		Env:       env,
 		EfkLogger: logger,
 		TracingID: "",
-		EfkTag:    "management_svc.logs",
+		EfkTag:    "book_svc.logs",
 		TestRun:   false,
 	}
 }
