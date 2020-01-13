@@ -3,47 +3,29 @@ package main
 import (
 	"flag"
 	"github.com/fluent/fluent-logger-golang/fluent"
-	"github.com/go-chi/chi"
 	"github.com/golang/glog"
 	"github.com/kelseyhightower/envconfig"
+	management_server "github.com/library/cmd/management-svc/management-server"
 	"github.com/library/data-store"
 	"github.com/library/efk"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
-	"github.com/library/server"
 	"github.com/sirupsen/logrus"
 	"os"
 )
 
-const efkTag = "management_svc.logs"
-
 var (
-	dataStore data_store.DbUtil
+	dataStore *data_store.DataStore
 	env       *envConfig.Env
 	logger    *fluent.Fluent
-	srv       *server.Server
-	tracingID string
+	srv       *management_server.Server
+	testRun   bool
 )
 
 func init() {
+	testRun = false
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(os.Stdout)
-}
-
-func setupRouter() *chi.Mux {
-	r := chi.NewRouter()
-	r.Use(middleware.ChainMiddlewares(true)...)
-
-	r.Route("/admin", func(r chi.Router) {
-		r.Get("/issue-book", issueBook)
-		r.Get("/get-history/{id}", getHistory)
-		r.Get("/complete-history", getCompleteHistory)
-		r.Get("/return-book/{id}", returnBook)
-	})
-	r.Route("/user", func(r chi.Router) {
-		r.Get("/check-availability/{id}", checkAvailability)
-	})
-	return r
 }
 
 func main() {
@@ -56,15 +38,14 @@ func main() {
 	logger = efk.NewLogger(env)
 	defer logger.Close()
 
-	dataStore = data_store.DbConnect(env, false)
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
+	dataStore = data_store.DbConnect(env, testRun)
 
-	srv = server.NewServer(dataStore)
-	r := setupRouter()
-	err = srv.ListenAndServe(r, "management-service", env.ManagementSvcPort)
+	srv = management_server.NewServer(env, dataStore, logger)
+	err = srv.ListenAndServe("management-service", env.ManagementSvcPort)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
-		}).Error("server start")
+		}).Error("management-server start")
 	}
 }

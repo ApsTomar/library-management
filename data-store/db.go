@@ -49,7 +49,7 @@ type BookIssue interface {
 	ReturnBook(uint) error
 }
 
-func DbConnect(dbConfig *envConfig.Env, testing bool) DbUtil {
+func DbConnect(dbConfig *envConfig.Env, testing bool) *DataStore {
 	var sqlUrl string
 	if testing {
 		sqlUrl = dbConfig.TestSqlUrl
