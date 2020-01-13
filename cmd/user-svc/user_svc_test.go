@@ -3,9 +3,10 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/jinzhu/gorm"
+	"github.com/go-chi/chi"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/library/data-store"
+	"github.com/library/cmd/user-svc/user-server"
+	data_store "github.com/library/data-store"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
 	"github.com/library/models"
@@ -17,7 +18,7 @@ import (
 
 var _ = Describe("User-Service", func() {
 	var (
-		db         *gorm.DB
+		r          *chi.Mux
 		adminEmail string
 		userEmail  string
 		err        error
@@ -27,19 +28,21 @@ var _ = Describe("User-Service", func() {
 		err = envconfig.Process("library", env)
 		Expect(err).To(BeNil())
 		testRun = true
-		db, err = gorm.Open(env.SqlDialect, env.TestSqlUrl)
-		Expect(err).To(BeNil())
-		err = setupUserData(db)
-		Expect(err).To(BeNil())
 		dataStore = data_store.DbConnect(env, true)
-		middleware.SetJwtSigningKey(env.JwtSigningKey)
+		srv = user_server.NewServer(env, dataStore, nil)
+		srv.TestRun = true
+		r = user_server.SetupRouter(srv)
+		middleware.SetJwtSigningKey(srv.Env.JwtSigningKey)
+		err = setupUserData(dataStore.Db)
+		Expect(err).To(BeNil())
 	})
 	Describe("Handlers Test", func() {
 		Describe("Registration Test", func() {
 			It("Should register a new user", func() {
+				userEmail = "unit@user.com"
 				regReq := &models.Account{
 					Name:     "testUser",
-					Email:    "test@user.com",
+					Email:    "unit@user.com",
 					Password: "password",
 				}
 				marshalReq, err := json.Marshal(regReq)
@@ -47,7 +50,7 @@ var _ = Describe("User-Service", func() {
 				req := httptest.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(marshalReq))
 				req.Header.Set("Content-Type", "application/json")
 				rec := httptest.NewRecorder()
-				register().ServeHTTP(rec, req)
+				r.ServeHTTP(rec, req)
 				resp := rec.Result()
 				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
 				resp.Body.Close()
@@ -57,7 +60,7 @@ var _ = Describe("User-Service", func() {
 		Describe("Login Test", func() {
 			Context("Admin Login", func() {
 				It("Should provide valid JWT token", func() {
-					adminEmail = "test@admin.com"
+					adminEmail = "unit@admin.com"
 					loginReq := &models.LoginDetails{
 						Email:       adminEmail,
 						Password:    "password",
@@ -68,7 +71,7 @@ var _ = Describe("User-Service", func() {
 					req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(marshalReq))
 					req.Header.Set("Content-Type", "application/json")
 					rec := httptest.NewRecorder()
-					login().ServeHTTP(rec, req)
+					r.ServeHTTP(rec, req)
 					resp := rec.Result()
 					Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
 					defer resp.Body.Close()
@@ -76,7 +79,6 @@ var _ = Describe("User-Service", func() {
 			})
 			Context("User Login", func() {
 				It("Should provide valid JWT token", func() {
-					userEmail = "test@user.com"
 					loginReq := &models.LoginDetails{
 						Email:       userEmail,
 						Password:    "password",
@@ -87,7 +89,7 @@ var _ = Describe("User-Service", func() {
 					req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(marshalReq))
 					req.Header.Set("Content-Type", "application/json")
 					rec := httptest.NewRecorder()
-					login().ServeHTTP(rec, req)
+					r.ServeHTTP(rec, req)
 					resp := rec.Result()
 					Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))
 					defer resp.Body.Close()
@@ -105,7 +107,7 @@ var _ = Describe("User-Service", func() {
 					req := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(marshalReq))
 					req.Header.Set("Content-Type", "application/json")
 					rec := httptest.NewRecorder()
-					login().ServeHTTP(rec, req)
+					r.ServeHTTP(rec, req)
 					resp := rec.Result()
 					Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusUnauthorized))
 					defer resp.Body.Close()
@@ -114,9 +116,7 @@ var _ = Describe("User-Service", func() {
 		})
 	})
 	AfterSuite(func() {
-		//err = cleanTestData(db, adminEmail, userEmail)
-		//Expect(err).To(BeNil())
-		err = db.Close()
+		err = cleanTestData(dataStore.Db, adminEmail, userEmail)
 		Expect(err).To(BeNil())
 	})
 })

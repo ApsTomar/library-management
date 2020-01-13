@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	dataStore data_store.DbUtil
+	dataStore *data_store.DataStore
 	env       *envConfig.Env
 	logger    *fluent.Fluent
 	srv       *user_server.Server

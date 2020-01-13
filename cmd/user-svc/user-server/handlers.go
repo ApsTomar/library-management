@@ -118,8 +118,10 @@ func (srv *Server) login() http.HandlerFunc {
 }
 
 func handleError(w http.ResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
-	srv.TracingID = ctx.Value(middleware.RequestTracingID).(string)
-	efk.LogError(srv.EfkLogger, srv.EfkTag, srv.TracingID, task, err, statusCode)
+	if !srv.TestRun {
+		srv.TracingID = ctx.Value(middleware.RequestTracingID).(string)
+		efk.LogError(srv.EfkLogger, srv.EfkTag, srv.TracingID, task, err, statusCode)
+	}
 	http.Error(w, err.Error(), statusCode)
 
 	logrus.WithFields(logrus.Fields{

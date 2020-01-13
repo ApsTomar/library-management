@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/kelseyhightower/envconfig"
+	user_server "github.com/library/cmd/user-svc/user-server"
 	data_store "github.com/library/data-store"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
 	"github.com/library/models"
 	password_hash "github.com/library/password-hash"
-	"github.com/library/server"
 	"github.com/sirupsen/logrus"
 	"net/http/httptest"
 	"os"
@@ -42,8 +42,8 @@ func TestMain(m *testing.M) {
 	}
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 
-	srv = server.NewServer(dataStore)
-	r := setupRouter()
+	srv = user_server.NewServer(env, dataStore, nil)
+	r := user_server.SetupRouter(srv)
 	testServer = httptest.NewServer(r)
 	_ = m.Run()
 	if err := dataStore.ClearUserSvcData(adminEmail, userEmail); err != nil {

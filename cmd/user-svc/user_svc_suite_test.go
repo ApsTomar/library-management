@@ -40,7 +40,7 @@ func addAdmin() (*models.Account, error) {
 	}
 	return &models.Account{
 		Name:         "TestAdmin",
-		Email:        "test@admin.com",
+		Email:        "unit@admin.com",
 		AccountRole:  models.AdminAccount,
 		Password:     password,
 		PasswordHash: hashedPwd,

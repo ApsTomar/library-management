@@ -14,6 +14,7 @@ type Server struct {
 	EfkLogger *fluent.Fluent
 	TracingID string
 	EfkTag    string
+	TestRun   bool
 }
 
 func NewServer(env *envConfig.Env, db datastore.DbUtil, logger *fluent.Fluent) *Server {
@@ -23,6 +24,7 @@ func NewServer(env *envConfig.Env, db datastore.DbUtil, logger *fluent.Fluent) *
 		EfkLogger: logger,
 		TracingID: "",
 		EfkTag:    "user_svc.logs",
+		TestRun:   false,
 	}
 }
 
