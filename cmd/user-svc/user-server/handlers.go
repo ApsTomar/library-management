@@ -1,4 +1,4 @@
-package main
+package user_server
 
 import (
 	"context"
@@ -16,39 +16,39 @@ import (
 	"strings"
 )
 
-func register() http.HandlerFunc {
+func (srv *Server) register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		account := &models.Account{}
 		err := json.NewDecoder(r.Body).Decode(account)
 		if err != nil {
-			handleError(w, ctx, "registration", err, http.StatusInternalServerError)
+			handleError(w, ctx, srv, "registration", err, http.StatusInternalServerError)
 			return
 		}
 		account.AccountRole = models.UserAccount
 		hashedPwd, err := password_hash.HashPassword(account.Password)
 		if err != nil {
-			handleError(w, ctx, "registration", err, http.StatusInternalServerError)
+			handleError(w, ctx, srv, "registration", err, http.StatusInternalServerError)
 			return
 		}
 		account.PasswordHash = hashedPwd
-		err = dataStore.CreateUserAccount(*account)
+		err = srv.DB.CreateUserAccount(*account)
 		if err != nil {
 			if strings.Contains(err.Error(), "1062") {
-				handleError(w, ctx, "registration", err, http.StatusBadRequest)
+				handleError(w, ctx, srv, "registration", err, http.StatusBadRequest)
 				return
 			}
-			handleError(w, ctx, "registration", err, http.StatusInternalServerError)
+			handleError(w, ctx, srv, "registration", err, http.StatusInternalServerError)
 			return
 		}
 		// get the created user account
-		acc, err := dataStore.VerifyUser(*&models.LoginDetails{
+		acc, err := srv.DB.VerifyUser(*&models.LoginDetails{
 			Email:       account.Email,
 			Password:    account.Password,
 			AccountRole: account.AccountRole,
 		})
 		if err != nil {
-			handleError(w, ctx, "registration", err, http.StatusInternalServerError)
+			handleError(w, ctx, srv, "registration", err, http.StatusInternalServerError)
 			return
 		}
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -56,9 +56,9 @@ func register() http.HandlerFunc {
 			"role": acc.AccountRole,
 		})
 
-		tokenStr, err := token.SignedString([]byte(env.JwtSigningKey))
+		tokenStr, err := token.SignedString([]byte(srv.Env.JwtSigningKey))
 		if err != nil {
-			handleError(w, ctx, "registration", err, http.StatusInternalServerError)
+			handleError(w, ctx, srv, "registration", err, http.StatusInternalServerError)
 			return
 		}
 		logrus.WithFields(logrus.Fields{
@@ -67,43 +67,43 @@ func register() http.HandlerFunc {
 
 		err = json.NewEncoder(w).Encode(&models.Response{AccountRole: models.UserAccount, Token: tokenStr})
 		if err != nil {
-			handleError(w, ctx, "registration", err, http.StatusInternalServerError)
+			handleError(w, ctx, srv, "registration", err, http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
-func login() http.HandlerFunc {
+func (srv *Server) login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		details := &models.LoginDetails{}
 		err := json.NewDecoder(r.Body).Decode(details)
 		if err != nil {
-			handleError(w, ctx, "login", err, http.StatusInternalServerError)
+			handleError(w, ctx, srv, "login", err, http.StatusInternalServerError)
 			return
 		}
-		account, err := dataStore.VerifyUser(*details)
+		account, err := srv.DB.VerifyUser(*details)
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
-				handleError(w, ctx, "login", errors.New(fmt.Sprintf("no such %v found", details.AccountRole)), http.StatusBadRequest)
+				handleError(w, ctx, srv, "login", errors.New(fmt.Sprintf("no such %v found", details.AccountRole)), http.StatusBadRequest)
 			} else {
-				handleError(w, ctx, "login", err, http.StatusInternalServerError)
+				handleError(w, ctx, srv, "login", err, http.StatusInternalServerError)
 			}
 			return
 		}
 
 		ok := password_hash.ValidatePassword(details.Password, account.PasswordHash)
 		if !ok {
-			handleError(w, ctx, "login", errors.New("invalid password"), http.StatusUnauthorized)
+			handleError(w, ctx, srv, "login", errors.New("invalid password"), http.StatusUnauthorized)
 			return
 		}
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"id":   account.ID,
 			"role": account.AccountRole,
 		})
-		tokenStr, err := token.SignedString([]byte(env.JwtSigningKey))
+		tokenStr, err := token.SignedString([]byte(srv.Env.JwtSigningKey))
 		if err != nil {
-			handleError(w, ctx, "login", err, http.StatusInternalServerError)
+			handleError(w, ctx, srv, "login", err, http.StatusInternalServerError)
 			return
 		}
 		logrus.WithFields(logrus.Fields{
@@ -111,21 +111,19 @@ func login() http.HandlerFunc {
 		}).Info(fmt.Sprintf("user login with email: %v", account.Email))
 		err = json.NewEncoder(w).Encode(&models.Response{AccountRole: details.AccountRole, Token: tokenStr})
 		if err != nil {
-			handleError(w, ctx, "login", err, http.StatusInternalServerError)
+			handleError(w, ctx, srv, "login", err, http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
-func handleError(w http.ResponseWriter, ctx context.Context, task string, err error, statusCode int) {
-	if !testRun {
-		tracingID = ctx.Value(middleware.RequestTracingID).(string)
-	}
-	efk.LogError(logger, efkTag, tracingID, task, err, statusCode)
+func handleError(w http.ResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
+	srv.TracingID = ctx.Value(middleware.RequestTracingID).(string)
+	efk.LogError(srv.EfkLogger, srv.EfkTag, srv.TracingID, task, err, statusCode)
 	http.Error(w, err.Error(), statusCode)
 
 	logrus.WithFields(logrus.Fields{
-		"tracingID":  tracingID,
+		"tracingID":  srv.TracingID,
 		"statusCode": statusCode,
 		"error":      err,
 	}).Error(task)

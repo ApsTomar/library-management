@@ -3,42 +3,28 @@ package main
 import (
 	"flag"
 	"github.com/fluent/fluent-logger-golang/fluent"
-	"github.com/go-chi/chi"
 	"github.com/kelseyhightower/envconfig"
+	user_server "github.com/library/cmd/user-svc/user-server"
 	"github.com/library/data-store"
 	"github.com/library/efk"
 	"github.com/library/envConfig"
 	"github.com/library/middleware"
-	"github.com/library/server"
 	"github.com/sirupsen/logrus"
 	"os"
 )
-
-const efkTag = "user_svc.logs"
 
 var (
 	dataStore data_store.DbUtil
 	env       *envConfig.Env
 	logger    *fluent.Fluent
-	srv       *server.Server
-	tracingID string
-	testRun bool
+	srv       *user_server.Server
+	testRun   bool
 )
 
 func init() {
 	testRun = false
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(os.Stdout)
-}
-
-func setupRouter() *chi.Mux {
-	r := chi.NewRouter()
-	r.Use(middleware.ChainMiddlewares(false)...)
-
-	r.Post("/register", register())
-	r.Post("/login", login())
-
-	return r
 }
 
 func main() {
@@ -56,12 +42,11 @@ func main() {
 
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 
-	srv = server.NewServer(dataStore)
-	r := setupRouter()
-	err = srv.ListenAndServe(r, "user-service", env.UserSvcPort)
+	srv = user_server.NewServer(env, dataStore, logger)
+	err = srv.ListenAndServe("user-service", env.UserSvcPort)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
-		}).Error("server start")
+		}).Error("user-server start")
 	}
 }
