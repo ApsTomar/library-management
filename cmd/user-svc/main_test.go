@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 	r := user_server.SetupRouter(srv)
 	testServer = httptest.NewServer(r)
 	_ = m.Run()
-	if err := dataStore.ClearUserSvcData(adminEmail, userEmail); err != nil {
+	if err := cleanTestData(dataStore.Db, adminEmail, userEmail); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
 		}).Fatal("cleaning testDB")

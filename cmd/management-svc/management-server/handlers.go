@@ -85,9 +85,7 @@ func (srv *Server) checkAvailability(w http.ResponseWriter, r *http.Request) {
 		handleError(w, ctx, srv, "check_availability", err, http.StatusInternalServerError)
 		return
 	}
-	resp := make(map[string]bool)
-	resp["avail"] = avail
-	err = json.NewEncoder(w).Encode(resp)
+	err = json.NewEncoder(w).Encode(avail)
 	if err != nil {
 		handleError(w, ctx, srv, "check_availability", err, http.StatusInternalServerError)
 	}

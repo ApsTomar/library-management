@@ -14,8 +14,6 @@ import (
 	"os"
 )
 
-const efkTag = "book_svc.logs"
-
 var (
 	dataStore *data_store.DataStore
 	env       *envConfig.Env

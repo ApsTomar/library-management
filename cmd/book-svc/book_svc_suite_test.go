@@ -17,7 +17,7 @@ func TestBook(t *testing.T) {
 
 func setupAuthInfo(env *envConfig.Env) (string, string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":   9999999,
+		"id":   10101010,
 		"role": models.AdminAccount,
 	})
 	adminToken, err := token.SignedString([]byte(env.JwtSigningKey))
@@ -25,7 +25,7 @@ func setupAuthInfo(env *envConfig.Env) (string, string, error) {
 		return "", "", err
 	}
 	token = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":   99999999,
+		"id":   10101010,
 		"role": models.UserAccount,
 	})
 	userToken, err := token.SignedString([]byte(env.JwtSigningKey))

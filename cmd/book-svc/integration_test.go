@@ -75,7 +75,7 @@ func TestBookService(t *testing.T) {
 		})
 	})
 
-	Convey("POST /get-book-by-name", t, func() {
+	Convey("GET /get-book-by-name", t, func() {
 		url := fmt.Sprintf("%s/get/books-by-name/testBook", testServer.URL)
 		Convey("It should retrieve book by name", func() {
 			req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -92,7 +92,7 @@ func TestBookService(t *testing.T) {
 		})
 	})
 
-	Convey("POST /get-author-by-name", t, func() {
+	Convey("GET /get-author-by-name", t, func() {
 		url := fmt.Sprintf("%s/get/author-by-name/testAuthor", testServer.URL)
 		Convey("It should retrieve author by name", func() {
 			req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -109,7 +109,7 @@ func TestBookService(t *testing.T) {
 		})
 	})
 
-	Convey("POST /get-book-by-author", t, func() {
+	Convey("GET /get-book-by-author", t, func() {
 		url := fmt.Sprintf("%s/get/books-by-author/%s", testServer.URL, testAuthorID)
 		Convey("It should retrieve books by author", func() {
 			req, err := http.NewRequest(http.MethodGet, url, nil)

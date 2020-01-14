@@ -5,21 +5,12 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/library/envConfig"
 	"github.com/library/models"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"time"
-
-	"testing"
 )
 
-func TestManagement(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Management-Svc Handler Tests")
-}
-
-func setupAuthInfo(env *envConfig.Env, db *gorm.DB) (string, string, error) {
+func setupAuthToken(env *envConfig.Env, db *gorm.DB) (string, string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":   1010,
+		"id":   101010,
 		"role": models.AdminAccount,
 	})
 	adminToken, err := token.SignedString([]byte(env.JwtSigningKey))
@@ -28,9 +19,9 @@ func setupAuthInfo(env *envConfig.Env, db *gorm.DB) (string, string, error) {
 	}
 
 	user := &models.Account{
-		BaseModel:   *&models.BaseModel{ID: 1010},
+		BaseModel:   *&models.BaseModel{ID: 101010},
 		Name:        "testUser",
-		Email:       "unit@user.com",
+		Email:       "integration@user.com",
 		AccountRole: "user",
 	}
 	err = db.Create(user).Error
@@ -39,7 +30,7 @@ func setupAuthInfo(env *envConfig.Env, db *gorm.DB) (string, string, error) {
 	}
 
 	token = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":   1010,
+		"id":   101010,
 		"role": models.UserAccount,
 	})
 	userToken, err := token.SignedString([]byte(env.JwtSigningKey))
@@ -50,10 +41,10 @@ func setupAuthInfo(env *envConfig.Env, db *gorm.DB) (string, string, error) {
 	return adminToken, userToken, err
 }
 
-func setupTestData(db *gorm.DB) error {
+func setupMockData(db *gorm.DB) error {
 	author := models.Author{
-		BaseModel:   *&models.BaseModel{ID: 1010},
-		Name:        "testAuthor",
+		BaseModel:   *&models.BaseModel{ID: 101010},
+		Name:        "intTestAuthor",
 		DateOfBirth: "29 February 1600",
 	}
 	err := db.Create(&author).Error
@@ -62,19 +53,19 @@ func setupTestData(db *gorm.DB) error {
 	}
 
 	subject := models.Subject{
-		BaseModel: *&models.BaseModel{ID: 1010},
-		Name:      "testSubject",
+		BaseModel: *&models.BaseModel{ID: 101010},
+		Name:      "intTestSubject",
 	}
 	err = db.Create(&subject).Error
 	if err != nil {
 		return err
 	}
 	book := models.Book{
-		BaseModel:     *&models.BaseModel{ID: 1010},
-		Name:          "testBook",
-		Subject:       "testSubject",
-		AuthorID:      "10101010",
-		AuthorName:    "testAuthor",
+		BaseModel:     *&models.BaseModel{ID: 101010},
+		Name:          "intTestBook",
+		Subject:       "intTestSubject",
+		AuthorID:      "101010",
+		AuthorName:    "intTestAuthor",
 		Available:     true,
 		AvailableDate: time.Now(),
 	}
@@ -85,17 +76,17 @@ func setupTestData(db *gorm.DB) error {
 	return nil
 }
 
-func cleanTestData(db *gorm.DB) error {
-	if err := db.Exec(`delete from account where id = ?`, "1010").Error; err != nil {
+func cleanMockData(db *gorm.DB) error {
+	if err := db.Exec(`delete from account where id = ?`, "101010").Error; err != nil {
 		return err
 	}
-	if err := db.Exec(`delete from author where id = ?`, "1010").Error; err != nil {
+	if err := db.Exec(`delete from author where id = ?`, "101010").Error; err != nil {
 		return err
 	}
-	if err := db.Exec(`delete from subject where id = ?`, "1010").Error; err != nil {
+	if err := db.Exec(`delete from subject where id = ?`, "101010").Error; err != nil {
 		return err
 	}
-	if err := db.Exec(`delete from book where id = ?`, "1010").Error; err != nil {
+	if err := db.Exec(`delete from book where id = ?`, "101010").Error; err != nil {
 		return err
 	}
 	return nil
