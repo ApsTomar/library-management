@@ -18,7 +18,8 @@ func GetAuthInfoFromContext(ctx context.Context) *models.AuthInfo {
 	return ctx.Value(middleware.ContextAuthInfo).(*models.AuthInfo)
 }
 
-func (srv *Server) getCompleteHistory(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) getCompleteHistory(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
 	authInfo := GetAuthInfoFromContext(ctx)
 	if authInfo.Role != models.AdminAccount {
@@ -40,7 +41,8 @@ func (srv *Server) getCompleteHistory(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getHistory(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) getHistory(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
 	authInfo := GetAuthInfoFromContext(ctx)
 	if authInfo.Role != models.AdminAccount {
@@ -68,7 +70,8 @@ func (srv *Server) getHistory(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) checkAvailability(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) checkAvailability(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
 	id := chi.URLParam(r, "id")
 	bookID, err := strconv.Atoi(id)
@@ -91,7 +94,8 @@ func (srv *Server) checkAvailability(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) issueBook(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) issueBook(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
 	authInfo := GetAuthInfoFromContext(ctx)
 	if authInfo.Role != models.AdminAccount {
@@ -126,7 +130,8 @@ func (srv *Server) issueBook(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) returnBook(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) returnBook(wr http.ResponseWriter, r *http.Request) {
+	w := middleware.NewLogResponseWriter(wr)
 	ctx := r.Context()
 	authInfo := GetAuthInfoFromContext(ctx)
 	if authInfo.Role != models.AdminAccount {
@@ -154,12 +159,13 @@ func (srv *Server) returnBook(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleError(w http.ResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
+func handleError(w *middleware.LogResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
 	if !srv.TestRun {
 		srv.TracingID = ctx.Value(middleware.RequestTracingID).(string)
 		efk.LogError(srv.EfkLogger, srv.EfkTag, srv.TracingID, task, err, statusCode)
 	}
 	http.Error(w, err.Error(), statusCode)
+	
 	logrus.WithFields(logrus.Fields{
 		"tracingID":  srv.TracingID,
 		"statusCode": statusCode,

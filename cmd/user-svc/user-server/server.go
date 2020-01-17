@@ -37,7 +37,7 @@ func NewServer(env *envConfig.Env, db datastore.DbUtil, logger *fluent.Fluent) *
 
 func (srv *Server) ListenAndServe(service string, port string) error {
 	prom = prometheus.NewRegistry()
-	promMetrics = metrics.NewMetrics()
+	promMetrics = metrics.NewMetrics("user_svc")
 	prom.MustRegister(promMetrics.RequestCounter)
 	prom.MustRegister(promMetrics.LatencyCalculator)
 

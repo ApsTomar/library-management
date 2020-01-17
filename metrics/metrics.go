@@ -7,23 +7,23 @@ type Metrics struct {
 	LatencyCalculator *prometheus.HistogramVec
 }
 
-func NewMetrics() *Metrics {
+func NewMetrics(svc string) *Metrics {
 	requestCounter := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: "library",
-			Subsystem: "user_svc",
-			Name:      "requests_count",
-			Help:      "Count of all user service requests",
+			Subsystem: svc,
+			Name:      "request_counter",
+			Help:      "Count of all http requests in " + svc,
 		}, []string{"code", "handler"},
 	)
 
 	latencyCounter := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: "library",
-			Subsystem: "management_svc",
-			Name:      "book_issue_latency",
-			Help:      "Latency of book_issue from library",
-			Buckets:   []float64{50, 100, 150, 200, 500},
+			Subsystem: svc,
+			Name:      "latency_calculator",
+			Help:      "Latency of handlers in " + svc,
+			Buckets:   []float64{10, 50, 100, 150, 200, 500},
 		}, []string{"code", "handler"},
 	)
 	return &Metrics{
