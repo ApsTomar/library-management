@@ -17,8 +17,9 @@ import (
 )
 
 func (srv *Server) register() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(wr http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+		w := middleware.NewLogResponseWriter(wr)
 		account := &models.Account{}
 		err := json.NewDecoder(r.Body).Decode(account)
 		if err != nil {
@@ -74,8 +75,9 @@ func (srv *Server) register() http.HandlerFunc {
 }
 
 func (srv *Server) login() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(wr http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+		w := &middleware.LogResponseWriter{ResponseWriter: wr}
 		details := &models.LoginDetails{}
 		err := json.NewDecoder(r.Body).Decode(details)
 		if err != nil {
@@ -117,7 +119,7 @@ func (srv *Server) login() http.HandlerFunc {
 	}
 }
 
-func handleError(w http.ResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
+func handleError(w *middleware.LogResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
 	if !srv.TestRun {
 		srv.TracingID = ctx.Value(middleware.RequestTracingID).(string)
 		efk.LogError(srv.EfkLogger, srv.EfkTag, srv.TracingID, task, err, statusCode)
