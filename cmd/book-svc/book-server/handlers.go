@@ -20,7 +20,8 @@ func GetAuthInfoFromContext(ctx context.Context) *models.AuthInfo {
 	return ctx.Value(middleware.ContextAuthInfo).(*models.AuthInfo)
 }
 
-func (srv *Server) addAuthor(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) addAuthor(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	authInfo := GetAuthInfoFromContext(ctx)
 	if authInfo.Role != models.AdminAccount {
@@ -43,7 +44,8 @@ func (srv *Server) addAuthor(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) addBook(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) addBook(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	authInfo := GetAuthInfoFromContext(ctx)
 	if authInfo.Role != models.AdminAccount {
@@ -68,7 +70,8 @@ func (srv *Server) addBook(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) addSubject(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) addSubject(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	authInfo := GetAuthInfoFromContext(ctx)
 	if authInfo.Role != models.AdminAccount {
@@ -91,7 +94,8 @@ func (srv *Server) addSubject(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getBooks(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) getBooks(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	books, err := srv.DB.GetBooks()
 	if err != nil {
@@ -108,7 +112,8 @@ func (srv *Server) getBooks(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getBooksByName(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) getBooksByName(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	name := chi.URLParam(r, "name")
 	books, err := srv.DB.GetBooksByName(name)
@@ -126,7 +131,8 @@ func (srv *Server) getBooksByName(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getBookByBookID(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) getBookByBookID(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	id := chi.URLParam(r, "id")
 	bookID, err := strconv.Atoi(id)
@@ -149,7 +155,8 @@ func (srv *Server) getBookByBookID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getBooksByAuthorID(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) getBooksByAuthorID(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	id := chi.URLParam(r, "id")
 	authorID, err := strconv.Atoi(id)
@@ -172,7 +179,8 @@ func (srv *Server) getBooksByAuthorID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getBooksBySubjectID(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) getBooksBySubjectID(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	id := chi.URLParam(r, "id")
 	subjectID, err := strconv.Atoi(id)
@@ -195,7 +203,8 @@ func (srv *Server) getBooksBySubjectID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getSubjects(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) getSubjects(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	subjects, err := srv.DB.GetSubjects()
 	if err != nil {
@@ -212,7 +221,8 @@ func (srv *Server) getSubjects(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getAuthors(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) getAuthors(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	authors, err := srv.DB.GetAuthors()
 	if err != nil {
@@ -229,7 +239,8 @@ func (srv *Server) getAuthors(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getAuthorByName(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) getAuthorByName(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	name := chi.URLParam(r, "name")
 	authors, err := srv.DB.GetAuthorsByName(name)
@@ -247,7 +258,8 @@ func (srv *Server) getAuthorByName(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (srv *Server) getAuthorByID(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) getAuthorByID(wr http.ResponseWriter, r *http.Request) {
+	w := &middleware.LogResponseWriter{ResponseWriter: wr}
 	ctx := r.Context()
 	id := chi.URLParam(r, "id")
 	authorID, err := strconv.Atoi(id)
@@ -270,7 +282,7 @@ func (srv *Server) getAuthorByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleError(w http.ResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
+func handleError(w *middleware.LogResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
 	if !srv.TestRun {
 		srv.TracingID = ctx.Value(middleware.RequestTracingID).(string)
 		efk.LogError(srv.EfkLogger, srv.EfkTag, srv.TracingID, task, err, statusCode)

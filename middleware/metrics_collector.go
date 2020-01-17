@@ -41,10 +41,13 @@ func getMetricName(urlPath string) string {
 	if strings.Contains(metricName, "/") {
 		parts := strings.Split(metricName, "/")
 		if len(parts) > 1 {
-			if parts[0] == "admin" || parts[0] == "user" {
-				metricName = parts[1]
-			} else {
-				metricName = parts[0]
+			i := 0
+			if parts[i] == "admin" || parts[i] == "user" {
+				i++
+			}
+			metricName = parts[i]
+			if parts[i] == "get" || parts[i] == "add" {
+				metricName += "/" + parts[i+1]
 			}
 		}
 	}
