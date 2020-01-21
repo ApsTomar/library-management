@@ -2,11 +2,15 @@ package middleware
 
 import (
 	"github.com/library/metrics"
+	"github.com/prometheus/client_golang/prometheus/push"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 )
+
+const pushGateway string = "localhost:9091"
 
 type LogResponseWriter struct {
 	http.ResponseWriter
@@ -18,11 +22,22 @@ func MetricsCollector(metrics *metrics.Metrics) func(handler http.Handler) http.
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			startTime := time.Now()
 			logResponseWriter := NewLogResponseWriter(w)
+			if r.URL.Path == "/metrics"{
+				handler.ServeHTTP(logResponseWriter, r)
+				return
+			}
 			handler.ServeHTTP(logResponseWriter, r)
 			metricName := getMetricName(r.URL.Path)
 			metrics.RequestCounter.WithLabelValues(strconv.Itoa(logResponseWriter.StatusCode), metricName).Add(float64(1))
 			metrics.LatencyCalculator.WithLabelValues(strconv.Itoa(logResponseWriter.StatusCode), metricName).
 				Observe(float64(time.Since(startTime).Milliseconds()))
+			pusher := push.New(pushGateway, "pushgateway")
+			pusher.Collector(metrics.RequestCounter)
+			if err := pusher.Push(); err != nil {
+				logrus.WithFields(logrus.Fields{
+					"source": "push_gateway",
+				}).Error(err)
+			}
 		})
 	}
 }
