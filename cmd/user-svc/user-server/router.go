@@ -12,6 +12,7 @@ func SetupRouter(srv *Server, prom *prometheus.Registry) *chi.Mux {
 	r.Use(middleware.ChainMiddlewares(false, promMetrics)...)
 	r.Post("/register", srv.register())
 	r.Post("/login", srv.login())
+	r.Get("/health", srv.health())
 	r.Handle("/metrics", promhttp.HandlerFor(prom, promhttp.HandlerOpts{}))
 
 	return r

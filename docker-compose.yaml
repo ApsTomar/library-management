@@ -54,11 +54,10 @@ services:
       dockerfile: ./cmd/user-svc/Dockerfile
     entrypoint: [
       "bin/user",
-      "-logtostderr",
     ]
     restart: always
     ports:
-      - "8080:8080"
+      - "8000:8000"
     links:
       - mysql
       - elasticsearch
@@ -78,11 +77,10 @@ services:
       dockerfile: ./cmd/book-svc/Dockerfile
     entrypoint: [
       "bin/book",
-      "-logtostderr",
     ]
     restart: always
     ports:
-      - "8081:8081"
+      - "8001:8001"
     links:
       - mysql
       - elasticsearch
@@ -102,11 +100,10 @@ services:
       dockerfile: ./cmd/management-svc/Dockerfile
     entrypoint: [
       "bin/management",
-      "-logtostderr",
     ]
     restart: always
     ports:
-      - "8082:8082"
+      - "8002:8002"
     links:
       - mysql
       - elasticsearch
