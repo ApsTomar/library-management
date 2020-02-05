@@ -6,4 +6,4 @@ RUN go mod download
 COPY . .
 RUN go build -o ./bin/book ./cmd/book-svc
 EXPOSE 8001
-ENTRYPOINT ["/bin/book"]
+ENTRYPOINT ["./bin/book"]

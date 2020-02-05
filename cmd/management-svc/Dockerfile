@@ -6,4 +6,4 @@ RUN go mod download
 COPY . .
 RUN go build -o ./bin/management ./cmd/management-svc
 EXPOSE 8002
-ENTRYPOINT ["/bin/management"]
+ENTRYPOINT ["./bin/management"]

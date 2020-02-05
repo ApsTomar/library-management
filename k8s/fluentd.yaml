@@ -36,6 +36,20 @@ subjects:
     namespace: default
 
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluentd
+  labels:
+    app: library-fluentd
+spec:
+  ports:
+    - port: 24224
+      protocol: TCP
+  selector:
+    app: library-fluentd
+---
+
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:

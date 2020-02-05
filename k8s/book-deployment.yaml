@@ -1,49 +1,49 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: user-svc
+  name: book-svc
   labels:
-    app: library-user-svc
+    app: library-book-svc
 spec:
   type: NodePort
   ports:
-    - port: 5000
+    - port: 5001
       protocol: TCP
-      nodePort: 30500
-      targetPort: 5000
+      nodePort: 30501
+      targetPort: 5001
   selector:
-    app: library-user-svc
+    app: library-book-svc
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-svc
+  name: book-svc
   labels:
-    app: library-user-svc
+    app: library-book-svc
 
 spec:
   selector:
     matchLabels:
-      app: library-user-svc
+      app: library-book-svc
   template:
     metadata:
       labels:
-        app: library-user-svc
+        app: library-book-svc
     spec:
       containers:
-        - image: apstomar/library_user_service:latest
+        - image: apstomar/library_book_service:latest
           imagePullPolicy: Always
           name: user-svc
           livenessProbe:
             httpGet:
               path: /health
-              port: 5000
+              port: 5001
             initialDelaySeconds: 5
             periodSeconds: 10
           env:
             - name: LIBRARY_PORT
-              value: "5000"
+              value: "5001"
             - name: LIBRARY_JWT_SIGNING_KEY
               valueFrom:
                 secretKeyRef:
