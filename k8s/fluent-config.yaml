@@ -1,0 +1,59 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: fluent-config
+  namespace: default
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+
+data:
+  fluent.conf: |-
+    <source>
+      @type forward
+      port 24224
+    </source>
+
+    <match user_svc.*>
+      @type copy
+    #  time_as_integer true
+      <store>
+        @type stdout
+      </store>
+      <store>
+        @type elasticsearch
+        host elasticsearch
+        port 9200
+        index_name fluentd.user_svc.logs
+        logstash_format false
+      </store>
+    </match>
+
+    <match book_svc.*>
+      @type copy
+    #  time_as_integer true
+      <store>
+        @type stdout
+      </store>
+      <store>
+        @type elasticsearch
+        host elasticsearch
+        port 9200
+        index_name fluentd.book_svc.logs
+        logstash_format false
+      </store>
+    </match>
+
+    <match management_svc.*>
+      @type copy
+    #  time_as_integer true
+      <store>
+        @type stdout
+      </store>
+      <store>
+        @type elasticsearch
+        host elasticsearch
+        port 9200
+        index_name fluentd.management_svc.logs
+        logstash_format false
+      </store>
+    </match>
