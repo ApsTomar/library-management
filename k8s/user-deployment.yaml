@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-svc
+  labels:
+    app: library-user-svc
+spec:
+  type: NodePort
+  ports:
+    - port: 5000
+      protocol: TCP
+      nodePort: 30500
+      targetPort: 5000
+  selector:
+    app: library-user-svc
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-svc
+  labels:
+    app: library-user-svc
+
+spec:
+  selector:
+    matchLabels:
+      app: library-user-svc
+  template:
+    metadata:
+      labels:
+        app: library-user-svc
+    spec:
+      containers:
+        - image: apstomar/library_user_service:latest
+          imagePullPolicy: Always
+          name: user-svc
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          env:
+            - name: LIBRARY_PORT
+              value: "5000"
+            - name: LIBRARY_JWT_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: library-secret
+                  key: jwt_signing_key
+            - name: LIBRARY_SQL_DIALECT
+              value: "mysql"
+            - name: LIBRARY_SQL_URL
+              valueFrom:
+                secretKeyRef:
+                  name: library-secret
+                  key: sql_url
+            - name: LIBRARY_FLUENT_PORT
+              value: "24224"
+            - name: LIBRARY_FLUENT_HOST
+              value: "fluentd"

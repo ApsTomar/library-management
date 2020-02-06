@@ -6,4 +6,4 @@ RUN go mod download
 COPY . .
 RUN go build -o ./bin/user ./cmd/user-svc
 EXPOSE 8000
-ENTRYPOINT ["/bin/user"]
+ENTRYPOINT ["./bin/user"]

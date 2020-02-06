@@ -282,6 +282,12 @@ func (srv *Server) getAuthorByID(wr http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (srv *Server) health() http.HandlerFunc {
+	return func(w http.ResponseWriter, request *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
 func handleError(w *middleware.LogResponseWriter, ctx context.Context, srv *Server, task string, err error, statusCode int) {
 	if !srv.TestRun {
 		srv.TracingID = ctx.Value(middleware.RequestTracingID).(string)

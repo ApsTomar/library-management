@@ -27,6 +27,7 @@ func SetupRouter(srv *Server) *chi.Mux {
 		r.Get("/author-by-name/{name}", srv.getAuthorByName)
 		r.Get("/author-by-id/{id}", srv.getAuthorByID)
 	})
+	r.Get("/health", srv.health())
 	r.Handle("/metrics", promhttp.HandlerFor(prom, promhttp.HandlerOpts{}))
 
 	return r
