@@ -9,14 +9,14 @@ import (
 func SetupRouter(srv *Server) *chi.Mux {
 	r := chi.NewRouter()
 	r.Route("/admin/add", func(r chi.Router) {
-		r.Use(middleware.ChainMiddlewares(true, promMetrics)...)
+		r.Use(middleware.ChainMiddlewares(true, promMetrics, srv.Env)...)
 		r.Post("/author", srv.addAuthor)
 		r.Post("/book", srv.addBook)
 		r.Post("/subject", srv.addSubject)
 
 	})
 	r.Route("/get", func(r chi.Router) {
-		r.Use(middleware.ChainMiddlewares(true, promMetrics)...)
+		r.Use(middleware.ChainMiddlewares(true, promMetrics, srv.Env)...)
 		r.Get("/books", srv.getBooks)
 		r.Get("/authors", srv.getAuthors)
 		r.Get("/subjects", srv.getSubjects)

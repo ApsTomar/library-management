@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/library/envConfig"
 	"github.com/library/metrics"
 	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/sirupsen/logrus"
@@ -10,19 +11,17 @@ import (
 	"time"
 )
 
-const pushGateway string = "localhost:9091"
-
 type LogResponseWriter struct {
 	http.ResponseWriter
 	StatusCode int
 }
 
-func MetricsCollector(metrics *metrics.Metrics) func(handler http.Handler) http.Handler {
+func MetricsCollector(metrics *metrics.Metrics, env *envConfig.Env) func(handler http.Handler) http.Handler {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			startTime := time.Now()
 			logResponseWriter := NewLogResponseWriter(w)
-			if r.URL.Path == "/metrics"{
+			if r.URL.Path == "/metrics" {
 				handler.ServeHTTP(logResponseWriter, r)
 				return
 			}
@@ -31,7 +30,7 @@ func MetricsCollector(metrics *metrics.Metrics) func(handler http.Handler) http.
 			metrics.RequestCounter.WithLabelValues(strconv.Itoa(logResponseWriter.StatusCode), metricName).Add(float64(1))
 			metrics.LatencyCalculator.WithLabelValues(strconv.Itoa(logResponseWriter.StatusCode), metricName).
 				Observe(float64(time.Since(startTime).Milliseconds()))
-			pusher := push.New(pushGateway, "pushgateway")
+			pusher := push.New(env.PushGateway, "pushgateway")
 			pusher.Collector(metrics.RequestCounter)
 			if err := pusher.Push(); err != nil {
 				logrus.WithFields(logrus.Fields{
