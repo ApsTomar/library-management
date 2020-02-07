@@ -9,7 +9,7 @@ import (
 
 func SetupRouter(srv *Server, prom *prometheus.Registry) *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(middleware.ChainMiddlewares(false, promMetrics)...)
+	r.Use(middleware.ChainMiddlewares(false, promMetrics, srv.Env)...)
 	r.Post("/register", srv.register())
 	r.Post("/login", srv.login())
 	r.Get("/health", srv.health())
