@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.metaData.name }}
+  labels:
+    app: {{ .Values.metaData.label }}
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.metaData.label }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.metaData.label }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "{{ .Values.env.port }}"
+    spec:
+      containers:
+        - name: {{ .Values.metaData.name }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.imageName }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.env.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livelinessProbe.endpoint }}
+              port: {{ .Values.env.port }}
+            initialDelaySeconds: {{ .Values.livelinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.livelinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.livelinessProbe.periodSeconds }}
+
+          env:
+            - name: LIBRARY_PORT
+              value: "{{ .Values.env.port }}"
+            - name: LIBRARY_JWT_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret.name }}
+                  key: jwt_signing_key
+            - name: LIBRARY_SQL_DIALECT
+              value: "{{ .Values.env.sqlDialect }}"
+            - name: LIBRARY_SQL_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret.name }}
+                  key: sql_url
+            - name: LIBRARY_FLUENT_PORT
+              value: "{{ .Values.env.fluentPort }}"
+            - name: LIBRARY_FLUENT_HOST
+              value: "{{ .Values.env.fluentHost }}"
+            - name: LIBRARY_PUSH_GATEWAY
+              value: "{{ .Values.env.pushGateway }}"

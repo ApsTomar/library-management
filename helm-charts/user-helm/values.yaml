@@ -57,9 +57,6 @@ secret:
   name: library-secret-k8s
   type: Opaque
 
-prometheus:
-  name: prometheus-config
-
 ingress:
   enabled: false
   annotations: {}
