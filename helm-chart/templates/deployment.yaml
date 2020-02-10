@@ -14,6 +14,10 @@ spec:
     metadata:
       labels:
         app: {{ .Values.metaData.label }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "{{ .Values.env.port }}"
     spec:
       containers:
         - name: {{ .Values.metaData.name }}
@@ -28,7 +32,9 @@ spec:
               path: {{ .Values.livelinessProbe.endpoint }}
               port: {{ .Values.env.port }}
             initialDelaySeconds: {{ .Values.livelinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.livelinessProbe.timeoutSeconds }}
             periodSeconds: {{ .Values.livelinessProbe.periodSeconds }}
+
           env:
             - name: LIBRARY_PORT
               value: "{{ .Values.env.port }}"

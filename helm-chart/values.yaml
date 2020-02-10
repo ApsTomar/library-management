@@ -38,13 +38,14 @@ livelinessProbe:
   endpoint: /health
   initialDelaySeconds: 5
   periodSeconds: 10
+  timeoutSeconds: 5
 
 env:
   port: 6000
   sqlDialect: mysql
-  fluentHost: fluent
+  fluentHost: fluentd
   fluentPort: 24224
-  pushGateway: monitor-prometheus-pushgateway
+  pushGateway: monitor-prometheus-pushgateway:9091
 
 service:
   type: NodePort
@@ -55,6 +56,9 @@ service:
 secret:
   name: library-secret-k8s
   type: Opaque
+
+prometheus:
+  name: prometheus-config
 
 ingress:
   enabled: false
