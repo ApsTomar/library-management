@@ -31,7 +31,7 @@ var _ = Describe("User-Service", func() {
 		dataStore = data_store.DbConnect(env, true)
 		srv = user_server.NewServer(env, dataStore, nil)
 		srv.TestRun = true
-		r = user_server.SetupRouter(srv)
+		r = user_server.SetupRouter(srv, nil)
 		middleware.SetJwtSigningKey(srv.Env.JwtSigningKey)
 		err = setupUserData(dataStore.Db)
 		Expect(err).To(BeNil())

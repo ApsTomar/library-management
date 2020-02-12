@@ -13,6 +13,7 @@ executors:
 
 jobs:
   go_mod:
+    executor: db
     environment:
       GO111MODULE=on
     steps:
@@ -65,6 +66,7 @@ jobs:
 #      - run: go test ./cmd/management-svc -v
 
   docker_build_user_svc:
+    executor: db
     steps:
       - checkout
       - setup_remote_docker
@@ -73,6 +75,7 @@ jobs:
       - run: docker push apstomar/library_user_service:latest
 
 #  docker_build_book_svc:
+#    executor: db
 #    steps:
 #      - checkout
 #      - setup_remote_docker
@@ -81,6 +84,7 @@ jobs:
 #      - run: docker push apstomar/library_book_service:latest
 #
 #  docker_build_management_svc:
+#    executor: db
 #    steps:
 #      - checkout
 #      - setup_remote_docker

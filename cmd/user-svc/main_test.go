@@ -43,7 +43,7 @@ func TestMain(m *testing.M) {
 	middleware.SetJwtSigningKey(env.JwtSigningKey)
 
 	srv = user_server.NewServer(env, dataStore, nil)
-	r := user_server.SetupRouter(srv)
+	r := user_server.SetupRouter(srv, nil)
 	testServer = httptest.NewServer(r)
 	_ = m.Run()
 	if err := cleanTestData(dataStore.Db, adminEmail, userEmail); err != nil {
