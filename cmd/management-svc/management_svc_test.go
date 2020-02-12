@@ -37,7 +37,7 @@ var _ = Describe("Management-Service", func() {
 		middleware.SetJwtSigningKey(srv.Env.JwtSigningKey)
 		adminToken, userToken, err = setupAuthInfo(env, dataStore.Db)
 		Expect(err).To(BeNil())
-		r = management_server.SetupRouter(srv)
+		r = management_server.SetupRouter(srv, nil)
 		err = setupTestData(dataStore.Db)
 		Expect(err).To(BeNil())
 	})

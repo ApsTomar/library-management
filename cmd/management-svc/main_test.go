@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 		}).Fatal("setting up mock data")
 	}
 	srv = management_server.NewServer(env, dataStore, nil)
-	r := management_server.SetupRouter(srv)
+	r := management_server.SetupRouter(srv, nil)
 	testServer = httptest.NewServer(r)
 	_ = m.Run()
 	if err := cleanMockData(dataStore.Db); err != nil {

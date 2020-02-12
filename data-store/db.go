@@ -7,6 +7,7 @@ import (
 	"github.com/library/migrations"
 	"github.com/library/models"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 type DataStore struct {
@@ -47,6 +48,8 @@ type BookIssue interface {
 	ReturnBook(uint) error
 }
 
+var retryAttempts = 0
+
 func DbConnect(dbConfig *envConfig.Env, testing bool) *DataStore {
 	var sqlUrl string
 	if testing {
@@ -58,13 +61,22 @@ func DbConnect(dbConfig *envConfig.Env, testing bool) *DataStore {
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
-		}).Fatal("DB connection not established")
+		}).Info("DB connection not established, retrying ...")
+		time.Sleep(time.Second * 5)
+		retryAttempts++
+		if retryAttempts > 5 {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Fatal("DB connection not established")
+		}
+		return DbConnect(dbConfig, testing)
+	} else {
+		err = migrations.InitMySQL(db)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": err,
+			}).Fatal("error running migrations")
+		}
+		return &DataStore{Db: db}
 	}
-	err = migrations.InitMySQL(db)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"error": err,
-		}).Fatal("error running migrations")
-	}
-	return &DataStore{Db: db}
 }

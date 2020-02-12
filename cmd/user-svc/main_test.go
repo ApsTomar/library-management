@@ -45,12 +45,13 @@ func TestMain(m *testing.M) {
 	srv = user_server.NewServer(env, dataStore, nil)
 	r := user_server.SetupRouter(srv, nil)
 	testServer = httptest.NewServer(r)
-	_ = m.Run()
+	res := m.Run()
 	if err := cleanTestData(dataStore.Db, adminEmail, userEmail); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": err,
 		}).Fatal("cleaning testDB")
 	}
+	os.Exit(res)
 }
 
 func createAdminAccount() error {
