@@ -20,6 +20,7 @@ jobs:
       - checkout
       - run: go mod download
       - run: go mod verify
+      - run: echo pwd
       - persist_to_workspace:
           root: .
           paths:
@@ -32,11 +33,13 @@ jobs:
       GO111MODULE=on
     steps:
       - checkout
-      - attach_workspace:
-          - at: .
-          - path:
-              - go.mod
-              - go.sum
+#      - attach_workspace:
+#          - at:
+#            - ./go.mod
+#            - ./go.sum
+#          - path:
+#              - go.mod
+#              - go.sum
       - run: go test ./cmd/user-svc -v
 
 #  book_svc_test:
@@ -107,12 +110,7 @@ workflows:
 #      - management_svc_test:
 #          requires:
 #            - go_mod
-    filters:
-      branches:
-        only: master
 
-  docker_builds:
-    jobs:
       - docker_build_user_svc:
           requires:
             - user_svc_test
@@ -122,6 +120,6 @@ workflows:
 #      - docker_build_management_svc:
 #          requires:
 #            - management_svc_test
-    filters:
-      branches:
-        only: master
+#    filters:
+#      branches:
+#        only: master
