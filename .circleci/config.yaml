@@ -1,1 +1,123 @@
 version: 2.1
+executors:
+  db:
+    docker:
+      - image: circleci/golang:1.13
+      - image: mysql:8.0
+        environment:
+          MYSQL_ROOT_PASSWORD: $MYSQL_PASSWORD
+          MYSQL_DATABASE: $MYSQL_DATABASE
+          MYSQL_USER: root
+          MYSQL_PASSWORD: $MYSQL_PASSWORD
+          MYSQL_HOST: 127.0.0.1
+  ​
+jobs:
+  go_mod:
+    environment:
+      GO111MODULE=on
+    steps:
+      - checkout
+      - run: go mod download
+      - run: go mod verify
+      - persist_to_workspace:
+          root: .
+          paths:
+            - go.mod
+            - go.sum
+
+  user_svc_test:
+    executor: db
+    environment:
+      GO111MODULE=on
+    steps:
+      - checkout
+      - attach_workspace:
+          - at: .
+          - path:
+              - go.mod
+              - go.sum
+      - run: go test ./cmd/user-svc -v
+
+#  book_svc_test:
+#    executor: db
+#    environment:
+#      GO111MODULE=on
+#    steps:
+#      - checkout
+#      - attach_workspace:
+#          - at: .
+#          - path:
+#              - go.mod
+#              - go.sum
+#      - run: go test ./cmd/book-svc -v
+#
+#  management_svc_test:
+#    executor: db
+#    environment:
+#      GO111MODULE=on
+#    steps:
+#      - checkout
+#      - attach_workspace:
+#          - at: .
+#          - path:
+#              - go.mod
+#              - go.sum
+#      - run: go test ./cmd/management-svc -v
+
+  docker_build_user_svc:
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD
+      - run: docker build -t apstomar/library_user_service:latest ./cmd/user-svc
+      - run: docker push apstomar/library_user_service:latest
+
+#  docker_build_book_svc:
+#    steps:
+#      - checkout
+#      - setup_remote_docker
+#      - run: docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD
+#      - run: docker build -t apstomar/library_book_service:latest ./cmd/book-svc
+#      - run: docker push apstomar/library_book_service:latest
+#
+#  docker_build_management_svc:
+#    steps:
+#      - checkout
+#      - setup_remote_docker
+#      - run: docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD
+#      - run: docker build -t apstomar/library_management_service:latest ./cmd/management-svc
+#      - run: docker push apstomar/library_management_service:latest
+
+
+workflows:
+  version: 2.1
+  go_tests:
+    jobs:
+      - go_mod
+      - user_svc_test:
+          requires:
+            - go_mod
+#      - book_svc_test:
+#          requires:
+#            - go_mod
+#      - management_svc_test:
+#          requires:
+#            - go_mod
+    filters:
+      branches:
+        only: master
+
+  docker_builds:
+    jobs:
+      - docker_build_user_svc:
+          requires:
+            - user_svc_test
+#      - docker_build_book_svc:
+#          requires:
+#            - book_svc_test
+#      - docker_build_management_svc:
+#          requires:
+#            - management_svc_test
+    filters:
+      branches:
+        only: master
