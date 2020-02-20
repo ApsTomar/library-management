@@ -26,16 +26,18 @@ func MetricsCollector(metrics *metrics.Metrics, env *envConfig.Env) func(handler
 				return
 			}
 			handler.ServeHTTP(logResponseWriter, r)
-			metricName := getMetricName(r.URL.Path)
-			metrics.RequestCounter.WithLabelValues(strconv.Itoa(logResponseWriter.StatusCode), metricName).Add(float64(1))
-			metrics.LatencyCalculator.WithLabelValues(strconv.Itoa(logResponseWriter.StatusCode), metricName).
-				Observe(float64(time.Since(startTime).Milliseconds()))
-			pusher := push.New(env.PushGateway, "pushgateway")
-			pusher.Collector(metrics.RequestCounter)
-			if err := pusher.Push(); err != nil {
-				logrus.WithFields(logrus.Fields{
-					"source": "push_gateway",
-				}).Error(err)
+			if metrics != nil {
+				metricName := getMetricName(r.URL.Path)
+				metrics.RequestCounter.WithLabelValues(strconv.Itoa(logResponseWriter.StatusCode), metricName).Add(float64(1))
+				metrics.LatencyCalculator.WithLabelValues(strconv.Itoa(logResponseWriter.StatusCode), metricName).
+					Observe(float64(time.Since(startTime).Milliseconds()))
+				pusher := push.New(env.PushGateway, "pushgateway")
+				pusher.Collector(metrics.RequestCounter)
+				if err := pusher.Push(); err != nil {
+					logrus.WithFields(logrus.Fields{
+						"source": "push_gateway",
+					}).Error(err)
+				}
 			}
 		})
 	}

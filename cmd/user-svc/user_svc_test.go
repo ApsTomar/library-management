@@ -47,9 +47,9 @@ var _ = Describe("User-Service", func() {
 				}
 				marshalReq, err := json.Marshal(regReq)
 				Expect(err).To(BeNil())
+				rec := httptest.NewRecorder()
 				req := httptest.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(marshalReq))
 				req.Header.Set("Content-Type", "application/json")
-				rec := httptest.NewRecorder()
 				r.ServeHTTP(rec, req)
 				resp := rec.Result()
 				Expect(resp.StatusCode).To(BeEquivalentTo(http.StatusOK))

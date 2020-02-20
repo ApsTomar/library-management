@@ -84,6 +84,7 @@ func (srv *Server) login() http.HandlerFunc {
 			handleError(w, ctx, srv, "login", err, http.StatusInternalServerError)
 			return
 		}
+
 		account, err := srv.DB.VerifyUser(*details)
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
@@ -93,7 +94,6 @@ func (srv *Server) login() http.HandlerFunc {
 			}
 			return
 		}
-
 		ok := password_hash.ValidatePassword(details.Password, account.PasswordHash)
 		if !ok {
 			handleError(w, ctx, srv, "login", errors.New("invalid password"), http.StatusUnauthorized)
