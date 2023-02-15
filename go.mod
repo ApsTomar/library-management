@@ -11,19 +11,17 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/jinzhu/gorm v1.9.10
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/oklog/ulid/v2 v2.0.2
 	github.com/onsi/ginkgo v1.7.0
 	github.com/onsi/gomega v1.4.3
 	github.com/philhofer/fwd v1.0.0 // indirect
-	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v1.3.0
+	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.11.1
 	github.com/rubenv/sql-migrate v0.0.0-20190902133344-8926f37f0bc1
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.6.0
 	github.com/smartystreets/goconvey v1.6.4
 	github.com/tinylib/msgp v1.1.0 // indirect
 	github.com/ziutek/mymysql v1.5.4 // indirect
-	golang.org/x/crypto v0.0.0-20190621222207-cc06ce4a13d4
-	golang.org/x/tools v0.0.0-20190624180213-70d37148ca0c
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	gopkg.in/gorp.v1 v1.7.2 // indirect
 )
 
